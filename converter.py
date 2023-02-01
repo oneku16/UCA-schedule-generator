@@ -15,7 +15,7 @@ class Converter:
             if type(sheet_name) is int:
                 return self.xlsx_file[self.xlsx_file.sheetnames[sheet_name]]
             return self.xlsx_file[sheet_name]
-        except KeyError as e:
+        except KeyError:
             if type(sheet_name) is int:
                 raise "xlsx sheet list index out of range"
 
