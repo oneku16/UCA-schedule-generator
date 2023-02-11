@@ -1,5 +1,7 @@
 DEANS_MEMO_PATH = "sources\\Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
 
+COLUMNS = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O')
+
 DEPARTMENT_NAMES = (
     "Preparatory",
     "Computer Science",
@@ -33,3 +35,20 @@ DEMO_COHORT = {
         }
     }
 }
+
+SUBJECT_JSON = {
+                'subject_id': None,
+                'subject_name': None,
+                'cohort': None,
+                'subject_type': {},
+                'instructors': {
+                    'primary': {
+                        'instructor_id': None,
+                        'instructor_name': None
+                    },
+                    'secondary': {
+                        'instructor_id': None,
+                        'instructor_name': None
+                    }
+                }
+            }
