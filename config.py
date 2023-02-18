@@ -37,18 +37,18 @@ DEMO_COHORT = {
 }
 
 SUBJECT_JSON = {
-                'subject_id': None,
-                'subject_name': None,
-                'cohort': None,
-                'subject_type': {},
-                'instructors': {
-                    'primary': {
-                        'instructor_id': None,
-                        'instructor_name': None
-                    },
-                    'secondary': {
-                        'instructor_id': None,
-                        'instructor_name': None
-                    }
-                }
-            }
+    'subject_id': None,
+    'subject_name': None,
+    'cohort': None,
+    'subject_type': {},
+    'instructors': {
+        'primary': {
+            'instructor_id': None,
+            'instructor_name': None
+        },
+        'secondary': {
+            'instructor_id': None,
+            'instructor_name': None
+        }
+    }
+}
