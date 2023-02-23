@@ -25,28 +25,28 @@ class Converter:
     def get_subject_id(subject_area, course_code) -> str:
         return f'{str(subject_area).strip()}{str(course_code).strip()}'.strip()
 
-    def set_subject_type(self, subject_types, subject_patterns) -> dict:
-        subject_type = self.get_subject_types(subject_types)
-        subject_patterns = self.get_subject_patterns(subject_patterns)
-        # print(subject_types)
-        # print(subject_patterns)
-        return {None: None}
+    def set_subject_type(self, subject_patterns) -> tuple:
+        def _wrap_subject():
+            subject_types = ('lecture', 'tutorial', 'lab')
+            for subject_type, subject_pattern in zip(subject_types, self.get_subject_patterns(subject_patterns)):
+                yield {subject_type: subject_pattern}
+
+        return tuple(_wrap_subject())
 
     @staticmethod
     def get_subject_types(subject_slots):
-        if subject_slots:
-            _bans = (',', 'and', ' ', '.')
-            subject_slots = list(filter(lambda item: item not in _bans, sub(r'\W+', ' ', subject_slots).split()))
-            return subject_slots
-        return subject_slots
+        ...
 
     @staticmethod
-    def get_subject_patterns(course_types):
-        try:
-            course_types = course_types.split(',')
-        except AttributeError:
-            return [course_types]
-        return course_types
+    def get_subject_patterns(course_types: str) -> List[str]:
+        def _splitter():
+            try:
+                for subject_pattern in course_types.split(','):
+                    subject_pattern = tuple(int(item.strip()) for item in subject_pattern.split('x'))
+                    yield {'classes': subject_pattern[0], 'duration': subject_pattern[1]}
+            except AttributeError:
+                return [course_types]
+
 
     @staticmethod
     def distribute_by_cohort(undergraduate_year, cohort, cohort_number=None):
@@ -67,15 +67,16 @@ class Converter:
             if sheet[f'A{index}'].value in DEPARTMENT_NAMES:
                 cohort = sheet[f'A{index}'].value
                 continue
+
             if sheet[f'A{index}'].value and sheet[f'B{index}'].value:
                 subject_json['subject_id'] = self.get_subject_id(sheet[f'A{index}'].value, sheet[f'B{index}'].value)
 
             if sheet[f'C{index}'].value:
                 subject_json['subject_name'] = sheet[f'C{index}'].value
 
-            self.set_subject_type(sheet[f'J{index}'].value, sheet[f'L{index}'].value)
-
-            subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value, sheet[f'I{index}'].value)
+            subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value,
+                                                               sheet[f'I{index}'].value)
+            subject_json['subject_patterns'] = self.set_subject_type(sheet[f'L{index}'].value)
             self.main_data.append(subject_json)
-        for data in self.main_data:
-            print(data)
+        for row in self.main_data:
+            print(row)
