@@ -42,13 +42,5 @@ SUBJECT_JSON = {
     'cohort': None,
     'subject_patterns': None,
     'instructors': {
-        'primary': {
-            'instructor_id': None,
-            'instructor_name': None
-        },
-        'secondary': {
-            'instructor_id': None,
-            'instructor_name': None
-        }
     }
 }
