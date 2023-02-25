@@ -1,2 +1,3 @@
-class SubjectType:
+class Subjects:
     ...
+

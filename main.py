@@ -3,7 +3,8 @@ from converter import Converter
 
 def main():
     converter = Converter()
-    converter.xlsx_to_json()
+    subjects = converter.xlsx_to_json()
+    print(subjects)
 
 
 if __name__ == '__main__':

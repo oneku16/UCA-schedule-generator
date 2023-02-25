@@ -95,5 +95,4 @@ class Converter:
                 subject_json['subject_patterns'] = self.set_subject_type(sheet[f'L{index}'].value)
             subject_json['instructors'] = self.get_instructor_names(sheet[f'M{index}'].value, sheet[f'N{index}'].value)
             self.main_data.append(subject_json)
-        for row in self.main_data:
-            print(row)
+        return self.main_data
