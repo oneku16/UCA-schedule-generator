@@ -5,5 +5,5 @@ import numpy
 
 class ScheduleGenerator:
 
-    def __init__(self):
+    def __init__(self, subjects):
         pass

@@ -53,6 +53,7 @@ class Converter:
 
     @staticmethod
     def distribute_by_cohort(undergraduate_year, cohort, cohort_number=None) -> str:
+        # print(undergraduate_year, cohort, cohort_number)
         if cohort_number:
             return f'Group {cohort_number[0]} {cohort}'.strip()
         return f'{"".join(map(str, filter(str.isupper, undergraduate_year)))} {cohort}'.strip()
@@ -88,7 +89,7 @@ class Converter:
                 subject_json['subject_id'] = self.get_subject_id(sheet[f'A{index}'].value, sheet[f'B{index}'].value)
             if sheet[f'C{index}'].value:
                 subject_json['subject_name'] = self.get_subject_title(sheet[f'C{index}'].value)
-            if sheet[f'G{index}'].value and sheet[f'I{index}'].value:
+            if sheet[f'G{index}'].value:
                 subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value,
                                                                    sheet[f'I{index}'].value)
             if sheet[f'L{index}'].value:
