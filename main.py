@@ -1,15 +1,13 @@
+from back_traking.schedule_generator import ScheduleGenerator
+from back_traking.project_data_types.subject import Subject
 from converter import Converter
-from back_traking.subject import Subject
 
 
 def main():
     converter = Converter()
-    subjects = converter.xlsx_to_json()
-    for subject in subjects:
-        print(subject)
-        _subject = Subject(**subject)
-        print(_subject.instructor.primary.instructor_name)
-        break
+    subjects = [Subject(**subject) for subject in converter.xlsx_to_json()]
+    schedule_generator = ScheduleGenerator(subjects)
+    print((subjects[0]))
 
 
 if __name__ == '__main__':

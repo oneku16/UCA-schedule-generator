@@ -1,5 +1,5 @@
-from back_traking.project_data_types.subject_pattern import SubjectPattern
-from back_traking.project_data_types.intructor import Instructor
+from .subject_pattern import SubjectPattern
+from .intructor import Instructor
 
 class Subject:
     __slots__ = '_subject_id', '_subject_name', '_cohort', '_subject_pattern', '_instructor'
@@ -10,6 +10,9 @@ class Subject:
         self._cohort = cohort
         self._subject_pattern = SubjectPattern(**subject_pattern)
         self._instructor = Instructor(**instructor)
+
+    def __str__(self):
+        return f'{self._subject_id}-{self._subject_name}'
 
     @property
     def subject_id(self):

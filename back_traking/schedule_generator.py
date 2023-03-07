@@ -4,6 +4,11 @@ import numpy
 
 
 class ScheduleGenerator:
+    __slots__ = '_subjects'
 
     def __init__(self, subjects):
-        pass
+        self._subjects = subjects
+
+    @property
+    def get_all_subjects(self):
+        return self._subjects
