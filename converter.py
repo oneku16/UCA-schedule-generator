@@ -1,6 +1,6 @@
 from openpyxl import load_workbook, Workbook
 from config import DEANS_MEMO_PATH, DEPARTMENT_NAMES, COLUMNS, SUBJECT_JSON
-from typing import List
+from typing import List, Dict
 from copy import deepcopy
 from solutions import TBD
 
@@ -31,13 +31,14 @@ class Converter:
     def get_subject_title(subject_title: str) -> str:
         return subject_title.replace(u'\xa0', u' ').strip()
 
-    def set_subject_type(self, subject_patterns) -> List[dict]:
-        def _wrap_subject():
-            subject_types = ('lecture', 'tutorial', 'lab')
-            for subject_type, subject_pattern in zip(subject_types, self.get_subject_patterns(subject_patterns)):
-                yield {subject_type: subject_pattern}
+    def set_subject_type(self, subject_patterns) -> dict[str, dict[str, dict]]:
+        _subject_patterns = dict()
 
-        return list(_wrap_subject())
+        subject_types = ('lecture', 'tutorial', 'laboratory')
+        for subject_type, subject_pattern in zip(subject_types, self.get_subject_patterns(subject_patterns)):
+            _subject_patterns[subject_type] = subject_pattern
+
+        return _subject_patterns
 
     @staticmethod
     def get_subject_patterns(course_types: str) -> List[dict]:
@@ -53,7 +54,6 @@ class Converter:
 
     @staticmethod
     def distribute_by_cohort(undergraduate_year, cohort, cohort_number=None) -> str:
-        # print(undergraduate_year, cohort, cohort_number)
         if cohort_number:
             return f'Group {cohort_number[0]} {cohort}'.strip()
         return f'{"".join(map(str, filter(str.isupper, undergraduate_year)))} {cohort}'.strip()
@@ -62,15 +62,12 @@ class Converter:
     def get_instructor_names(primary_instructor: str, secondary_instructor: str | None) -> dict:
         if primary_instructor:
             if primary_instructor.strip() == 'TBD':
-                return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD()}}
-            instructors = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip()}}
+                return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD(), 'preferences': None }}
+            instructors = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip(), 'preferences': None}}
             if secondary_instructor:
-                instructors['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip()}
+                instructors['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip(), 'preferences': None}
             return instructors
-        return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD()}}
-
-    def is_valid_instructor(self, instructors):
-        ...
+        return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD(), 'preferences': None}}
 
     def is_valid_data(self):
         ...
@@ -93,7 +90,7 @@ class Converter:
                 subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value,
                                                                    sheet[f'I{index}'].value)
             if sheet[f'L{index}'].value:
-                subject_json['subject_patterns'] = self.set_subject_type(sheet[f'L{index}'].value)
-            subject_json['instructors'] = self.get_instructor_names(sheet[f'M{index}'].value, sheet[f'N{index}'].value)
+                subject_json['subject_pattern'] = self.set_subject_type(sheet[f'L{index}'].value)
+            subject_json['instructor'] = self.get_instructor_names(sheet[f'M{index}'].value, sheet[f'N{index}'].value)
             self.main_data.append(subject_json)
         return self.main_data

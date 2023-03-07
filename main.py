@@ -1,6 +1,5 @@
 from converter import Converter
 from back_traking.subject import Subject
-from back_traking.project_types import SubjectPattern
 
 
 def main():
@@ -8,11 +7,9 @@ def main():
     subjects = converter.xlsx_to_json()
     for subject in subjects:
         print(subject)
-    # for subject in subjects:
-    #     # print(subject)
-    #     _subject = Subject(**subject)
-    #     print(_subject.get_lecture(), _subject.get_tutorial(), _subject.get_laboratory(), _subject.get_subject_name())
-
+        _subject = Subject(**subject)
+        print(_subject.instructor.primary.instructor_name)
+        break
 
 
 if __name__ == '__main__':
