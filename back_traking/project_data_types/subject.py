@@ -1,4 +1,4 @@
-from .subject_pattern import SubjectPattern
+from .subject_type import SubjectPattern
 from .intructor import Instructor
 
 class Subject:

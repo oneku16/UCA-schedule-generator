@@ -19,10 +19,5 @@ class InstructorType:
         return self._instructor_name
 
     @property
-    def have_preferences(self):
-        return False if self._preferences is None else True
-
-    @property
     def preferences(self):
         return self._preferences
-
