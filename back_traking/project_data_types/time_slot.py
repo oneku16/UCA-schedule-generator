@@ -24,10 +24,12 @@ class Day:
         return self._slots[0] if self._slots else False
 
     def set_quarter(self, quarter=None, instructor_preference=None):
+        self._size -= 1
         if quarter is None:
             quarter = self.bottom_quarter()
-            self._size -= 1
             self._slots.popleft()
+        else:
+            pass
 
     @property
     def is_possible(self):
