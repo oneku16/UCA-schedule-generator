@@ -2,62 +2,59 @@ from collections import deque
 
 
 class Day:
-    __slots__ = '_first_quarter', '_second_quarter', '_third_quarter', '_fourth_quarter', '_slots', '_quarters', '_size'
+    __slots__ = '_indexes', '_quarters', '_durations', '_size', '_time_slots'
 
     def __init__(self):
-        self._first_quarter = False
-        self._second_quarter = False
-        self._third_quarter = False
-        self._fourth_quarter = False
-        self._slots = deque(['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter'])
-        self._quarters = {'first_quarter': {'start_time': '09:00', 'end_time': '10:30'},
-                          'second_quarter': {'start_time': '11:00', 'end_time': '12:30'},
-                          'third_quarter': {'start_time': '14:00', 'end_time': '15:30'},
-                          'fourth_quarter': {'start_time': '16:00', 'end_time': '17:30'}
-                          }
-        self._size = len(self._slots)
-
-    def top_quarter(self):
-        return self._slots[-1] if self._slots else False
-
-    def bottom_quarter(self):
-        return self._slots[0] if self._slots else False
-
-    def set_quarter(self, quarter=None, instructor_preference=None):
-        self._size -= 1
-        if quarter is None:
-            quarter = self.bottom_quarter()
-            self._slots.popleft()
-        else:
-            pass
+        self._indexes = deque([0, 1, 2, 3])
+        self._quarters = ('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter')
+        self._durations = {'first_quarter': {'start': '09:00', 'end': '10:30'},
+                           'second_quarter': {'start': '11:00', 'end': '12:30'},
+                           'third_quarter': {'start': '14:00', 'end': '15:30'},
+                           'fourth_quarter': {'start': '16:00', 'end': '17:30'}}
+        self._size = len(self._indexes)
+        self._time_slots = {index: quarter for index, quarter in zip(self._indexes, self._quarters)}
 
     @property
-    def is_possible(self):
-        return self._size != 0
+    def number_of_slots(self):
+        return self._size
 
     @property
-    def is_first_quarter(self):
-        return self._first_quarter
+    def is_empty(self):
+        return not self._size
 
-    @property
-    def is_second_quarter(self):
-        return self._second_quarter
+    def set_slot(self, preferences=None):
+        if preferences is None:
+            quarter_index = self._indexes.popleft()
+            self._size -= 1
+            return self._time_slots[quarter_index]
 
-    @property
-    def is_third_quarter(self):
-        return self._third_quarter
+    def top_slot(self, duration=True):
+        if duration:
+            start = self._durations[self._time_slots[self._indexes[-1]]]['start']
+            end = self._durations[self._time_slots[self._indexes[-1]]]['end']
+            # return start, end
+            return self._durations[self._time_slots[self._indexes[-1]]]
+        return self._time_slots[self._indexes[-1]]
 
-    @property
-    def is_fourth_quarter(self):
-        return self._fourth_quarter
+    def bottom_slot(self, duration=True):
+        if duration:
+            start = self._durations[self._time_slots[self._indexes[0]]]['start']
+            end = self._durations[self._time_slots[self._indexes[0]]]['end']
+            # return start, end
+            return self._durations[self._time_slots[self._indexes[0]]]
+        return self._time_slots[self._indexes[0]]
 
 
 class Monday(Day):
     ...
 
 
-class TimeSlot:
-    __slots__ = ''
+# class TimeSlot:
+#     __slots__ = ''
+#
+#     def __init__(self):
+#         ...
 
-    def __init__(self):
-        ...
+
+day = Day()
+print(day)

@@ -1,6 +1,7 @@
 from .subject_type import SubjectPattern
 from .intructor import Instructor
 
+
 class Subject:
     __slots__ = '_subject_id', '_subject_name', '_cohort', '_subject_pattern', '_instructor'
 

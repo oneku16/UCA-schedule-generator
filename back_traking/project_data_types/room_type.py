@@ -1,11 +1,14 @@
 class Lecture:
     ...
 
+
 class Laboratory:
     ...
 
+
 class Bubble:
     ...
+
 
 class RoomType:
     __slots__ = '_room_type', '_options'
