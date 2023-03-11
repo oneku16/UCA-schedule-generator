@@ -1,16 +1,15 @@
 from back_traking.schedule_generator import ScheduleGenerator
 from back_traking.project_data_types.subject import Subject
-from pprint import pprint
 from converter import Converter
+from time import perf_counter
 
 
 def main():
+
+    start_time = perf_counter()
     converter = Converter()
-    # pprint(converter.xlsx_to_json())
     subjects = [Subject(**subject) for subject in converter.xlsx_to_json()]
-    schedule_generator = ScheduleGenerator(subjects)
-    print(subjects[0].subject_id, subjects[0].cohort)
-    print(subjects[1].subject_id, subjects[1].cohort)
+    subjects.sort(key=lambda subject: (subject.subject_pattern.counter, [pattern.number_of_classes for pattern in subject.subject_pattern.patterns]), reverse=True)
 
 
 if __name__ == '__main__':

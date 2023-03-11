@@ -1,4 +1,3 @@
-from typing import Tuple, Any
 from back_traking.project_exceptions.time_slot_exceptions import NoSlots, OverFlowSlots
 
 
@@ -23,8 +22,12 @@ class Day:
         return self._size == 0
 
     @property
-    def is_available(self):
+    def slot_for_lecture(self):
         return self._size >= 1
+
+    @property
+    def slot_for_lab(self):
+        return self._size >= 2
 
     @property
     def is_full(self):
@@ -43,30 +46,34 @@ class Day:
             if value:
                 return index
 
-    def get_slot(self, bottom=True, class_call=False, only_duration: bool = True) -> tuple[int, Any] | Any:
-        if self.is_empty:
-            raise NoSlots
-        index = self.__get_bottom if bottom else self.__get_top
-        if class_call:
-            return self._quarters[index], self._durations[self._quarters[index]]
-        if only_duration:
-            return self._durations[self._quarters[index]]
-        return self._quarters[index]
+    def reserve_slot(self, subject):
+        ...
 
-    def reserve_slot(self, preferences=None):
-        if self.is_empty:
-            raise NoSlots
-        if preferences is None:
-            quarter, time = self.get_slot(class_call=True)
-            self._size -= 1
-            self._quarters_dict[quarter] = False
-            return quarter, time
+    # def get_slot(self, bottom=True, class_call=False, only_duration: bool = True) -> tuple[int, Any] | Any:
+    #     if self.is_empty:
+    #         raise NoSlots
+    #     index = self.__get_bottom if bottom else self.__get_top
+    #     if class_call:
+    #         return self._quarters[index], self._durations[self._quarters[index]]
+    #     if only_duration:
+    #         return self._durations[self._quarters[index]]
+    #     return self._quarters[index]
+    #
+    # def reserve_slot(self, preferences=None):
+    #     if self.is_empty:
+    #         raise NoSlots
+    #     if preferences is None:
+    #         quarter, time = self.get_slot(class_call=True)
+    #         self._size -= 1
+    #         self._quarters_dict[quarter] = False
+    #         return quarter, time
+    #
+    # def undo_reservation(self, quarter):
+    #     if self.is_full:
+    #         raise OverFlowSlots
+    #     self._size += 1
+    #     self._quarters_dict[quarter] = True
 
-    def undo_reservation(self, quarter):
-        if self.is_full:
-            raise OverFlowSlots
-        self._size += 1
-        self._quarters_dict[quarter] = True
 
 class Monday(Day):
     ...

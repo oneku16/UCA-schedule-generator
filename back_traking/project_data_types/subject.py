@@ -1,4 +1,4 @@
-from .subject_type import SubjectPattern
+from .subject_pattern import SubjectPattern
 from .intructor import Instructor
 
 
@@ -9,7 +9,7 @@ class Subject:
         self._subject_id = subject_id
         self._subject_name = subject_name
         self._cohort = cohort
-        self._subject_pattern = SubjectPattern(**subject_pattern)
+        self._subject_pattern = SubjectPattern(subject_pattern)
         self._instructor = Instructor(**instructor)
 
     def __str__(self):
@@ -34,3 +34,7 @@ class Subject:
     @property
     def instructor(self):
         return self._instructor
+
+    @property
+    def full_information(self):
+        return f'id={self._subject_id}, title={self._subject_name}, pattern={[(pattern.name, pattern.number_of_classes) for pattern in self._subject_pattern.patterns]}'

@@ -1,35 +1,37 @@
 from back_traking.project_exceptions.subject_exceptions import ExceptionNoClasses, ExceptionClassLimit
 
+
 class SubjectPatternType:
-    __slots__ = '_classes', '_duration', '_initial_number_of_classes'
+    __slots__ = '_name', '_number_of_classes', '_class_duration', '_initial_number_of_classes'
 
-    def __init__(self, classes: (int | None), duration: int):
-        self._classes = classes
-        self._duration = duration
-        self._initial_number_of_classes = duration
-
-    @property
-    def is_exist(self):
-        return False if self._classes is None else True
+    def __init__(self, name, pattern):
+        self._name = name
+        self._number_of_classes, self._class_duration = pattern
+        self._initial_number_of_classes = self._number_of_classes
 
     @property
-    def _is_possible(self):
-        return not self._classes
+    def name(self):
+        return self._name
 
     @property
     def number_of_classes(self):
-        return self._classes
+        return self._number_of_classes
 
     @property
-    def duration(self):
-        return self._duration
+    def class_duration(self):
+        return self._class_duration
 
-    def set_class(self):
-        if self._is_possible:
+    def is_possible(self, add=False):
+        if add:
+            return 0 <= self._number_of_classes < self._initial_number_of_classes
+        return self._number_of_classes >= 1
+
+    def reserve_class(self):
+        if not self.is_possible():
             raise ExceptionNoClasses
-        self._classes -= 1
+        self._number_of_classes -= 1
 
-    def add_class(self):
-        if self.number_of_classes == self._initial_number_of_classes:
+    def undo_reservation(self):
+        if not self.is_possible(add=True):
             raise ExceptionClassLimit
-        self._classes += 1
+        self._number_of_classes += 1

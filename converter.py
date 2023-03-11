@@ -1,6 +1,6 @@
 from openpyxl import load_workbook, Workbook
 from config import DEANS_MEMO_PATH, DEPARTMENT_NAMES, COLUMNS, SUBJECT_JSON
-from typing import List, Dict
+from typing import List, Dict, Tuple, Any
 from copy import deepcopy
 from solutions import TBD
 
@@ -31,14 +31,13 @@ class Converter:
     def get_subject_title(subject_title: str) -> str:
         return subject_title.replace(u'\xa0', u' ').strip()
 
-    def set_subject_type(self, subject_patterns) -> dict[str, dict[str, dict]]:
-        _subject_patterns = dict()
+    def set_subject_type(self, subject_patterns) -> tuple[tuple[Any | None, Any | None], ...]:
 
-        subject_types = ('lecture', 'tutorial', 'laboratory')
-        for subject_type, subject_pattern in zip(subject_types, self.get_subject_patterns(subject_patterns)):
-            _subject_patterns[subject_type] = subject_pattern
+        def _wrapper():
+            for subject_pattern in self.get_subject_patterns(subject_patterns):
+                yield subject_pattern.get('classes'), subject_pattern.get('duration')
 
-        return _subject_patterns
+        return tuple(_wrapper())
 
     @staticmethod
     def get_subject_patterns(course_types: str) -> List[dict]:
