@@ -2,17 +2,22 @@ from openpyxl import load_workbook
 from config import DEANS_MEMO_PATH, DEPARTMENT_NAMES, SUBJECT_JSON
 from typing import List, Any
 from copy import deepcopy
-from solutions import TBD
 
 
 class Converter:
-    __slots__ = 'xlsx_file', 'main_data'
+    __slots__ = 'xlsx_file', '_TBD'
 
-    _TBD = TBD()
+    class __TBD:
+        _index = 0
+
+        @property
+        def index(self):
+            self._index += 1
+            return f'TBD{self._index}'
 
     def __init__(self):
         self.xlsx_file = load_workbook(DEANS_MEMO_PATH, data_only=True)
-        self.main_data = []
+        self._TBD = self.__TBD()
 
     def get_xlsx_sheet(self, sheet_name: int | str) -> object:
         try:
@@ -57,16 +62,15 @@ class Converter:
             return f'Group {cohort_number[0]} {cohort}'.strip()
         return f'{"".join(map(str, filter(str.isupper, undergraduate_year)))} {cohort}'.strip()
 
-    @staticmethod
-    def get_instructor_names(primary_instructor: str, secondary_instructor: str | None) -> dict:
+    def get_instructor_names(self, primary_instructor: str, secondary_instructor: str | None) -> dict:
         if primary_instructor:
             if primary_instructor.strip() == 'TBD':
-                return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD(), 'preferences': None}}
+                return {'primary': {'instructor_id': None, 'instructor_name': self._TBD.index, 'preferences': None}}
             instructors = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip(), 'preferences': None}}
             if secondary_instructor:
                 instructors['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip(), 'preferences': None}
             return instructors
-        return {'primary': {'instructor_id': None, 'instructor_name': Converter._TBD.get_TBD(), 'preferences': None}}
+        return {'primary': {'instructor_id': None, 'instructor_name': self._TBD.index, 'preferences': None}}
 
     def xlsx_to_json(self, sheet_name='Spring 2023'):
         def _wrapper():
