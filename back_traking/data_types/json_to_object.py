@@ -2,7 +2,7 @@ from .subject_pattern import SubjectPattern
 from .intructor import Instructor
 
 
-class Subject:
+class JSONToObject:
     __slots__ = '_subject_id', '_subject_name', '_cohort', '_subject_pattern', '_instructor'
 
     def __init__(self, subject_id, subject_name, cohort, subject_pattern, instructor):
