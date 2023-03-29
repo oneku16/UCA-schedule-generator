@@ -4,10 +4,8 @@ class Instructor:
     class __InstructorType:
         __slots__ = '_instructor_id', '_instructor_name', '_preferences'
 
-        def __init__(self, instructor_name, instructor_id=None, preferences=None):
-            self._instructor_id = instructor_id
-            self._instructor_name = instructor_name
-            self._preferences = preferences
+        def __init__(self, **kwargs):
+            self._instructor_id, self._instructor_name, self._preferences = kwargs
 
         @property
         def is_instructor_exist(self):

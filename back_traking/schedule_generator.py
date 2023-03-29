@@ -6,7 +6,8 @@ from back_traking.data_types.rooms import Rooms
 class ScheduleGenerator:
     __slots__ = '_subjects', '_rooms', '_schedule'
 
-    def __init__(self, subjects):
+    def __init__(self, *subjects):
+        print(subjects)
         self._subjects = sorted(subjects, key=lambda subject: (subject.subject_pattern.counter, [pattern.number_of_classes for pattern in subject.subject_pattern.patterns]), reverse=True)
         self._rooms = Rooms().rooms
         self._schedule = []
@@ -16,7 +17,7 @@ class ScheduleGenerator:
         return self._subjects
 
     @property
-    def get_all_rooms(self):
+    def get_all_rooms(self) -> List[Rooms]:
         return self._rooms
 
     def test(self):
