@@ -5,6 +5,7 @@ class Instructor:
         __slots__ = '_instructor_id', '_instructor_name', '_preferences'
 
         def __init__(self, **kwargs):
+
             self._instructor_id, self._instructor_name, self._preferences = kwargs
 
         @property
@@ -26,8 +27,9 @@ class Instructor:
     def __init__(self, primary, secondary=None):
         if secondary is None:
             secondary = {'instructor_name': None}
-        self._primary = self.__InstructorType(**primary)
-        self._secondary = self.__InstructorType(**secondary)
+        else:
+            self._primary = self.__InstructorType(**primary)
+            self._secondary = self.__InstructorType(**secondary)
 
     @property
     def primary(self):

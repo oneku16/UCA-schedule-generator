@@ -1,15 +1,14 @@
-from back_traking.project_exceptions.subject_exceptions import ExceptionNoClasses, ExceptionClassLimit
+from back_traking_demo_1.project_exceptions.subject_exceptions import ExceptionNoClasses, ExceptionClassLimit
 
 
 class SubjectPatternType:
 
-    __slots__ = '_name', '_number_of_classes', '_class_duration', '_initial_number_of_classes', '_stack'
+    __slots__ = '_name', '_number_of_classes', '_class_duration', '_initial_number_of_classes'
 
     def __init__(self, name: str, pattern: tuple[int, int]):
         self._name = name
         self._number_of_classes, self._class_duration = pattern
         self._initial_number_of_classes = self._number_of_classes
-        self._stack = []
 
     @property
     def name(self):

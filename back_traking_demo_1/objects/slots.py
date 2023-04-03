@@ -1,6 +1,6 @@
-from back_traking.configs import DAYS
-from back_traking.data_types.subject_pattern_type import SubjectPatternType
-from back_traking.project_exceptions.time_slot_exceptions import NoSlots, OverFlowSlots
+from back_traking_demo_1.configs import DAYS
+from back_traking_demo_1.objects.subject_pattern_type import SubjectPatternType
+from back_traking_demo_1.project_exceptions.time_slot_exceptions import NoSlots, OverFlowSlots
 from typing import List
 
 

@@ -1,19 +1,18 @@
 from typing import List
-from back_traking.data_types.json_to_object import JSONToObject
-from back_traking.data_types.rooms import Rooms
+from back_traking_demo_1.objects.subject import Subject
+from back_traking_demo_1.objects.rooms import Rooms
 
 
 class ScheduleGenerator:
     __slots__ = '_subjects', '_rooms', '_schedule'
 
-    def __init__(self, *subjects):
-        print(subjects)
+    def __init__(self, subjects):
         self._subjects = sorted(subjects, key=lambda subject: (subject.subject_pattern.counter, [pattern.number_of_classes for pattern in subject.subject_pattern.patterns]), reverse=True)
         self._rooms = Rooms().rooms
         self._schedule = []
 
     @property
-    def get_all_subjects(self) -> List[JSONToObject]:
+    def get_all_subjects(self) -> List[Subject]:
         return self._subjects
 
     @property
