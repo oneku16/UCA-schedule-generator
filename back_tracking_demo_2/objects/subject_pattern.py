@@ -1,6 +1,7 @@
 from typing import Tuple, List
 from back_tracking_demo_2.configs import SUBJECT_PATTERNS
 
+
 class SubjectPattern:
     __slots__ = '__patterns'
 
