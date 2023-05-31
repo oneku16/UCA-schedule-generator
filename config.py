@@ -9,10 +9,10 @@ DEPARTMENT_NAMES = (
 
 
 SUBJECT_JSON = {
-    'subject_id': None,
-    'subject_name': None,
+    'id': None,
+    'title': None,
     'cohort': None,
-    'subject_pattern': None,
+    'patterns': None,
     'instructor': {
     }
 }

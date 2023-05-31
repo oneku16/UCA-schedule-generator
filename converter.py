@@ -85,14 +85,14 @@ class Converter:
                     cohort = sheet[f'A{index}'].value
                     continue
                 if sheet[f'A{index}'].value and sheet[f'B{index}'].value:
-                    subject_json['subject_id'] = self.get_subject_id(sheet[f'A{index}'].value, sheet[f'B{index}'].value)
+                    subject_json['id'] = self.get_subject_id(sheet[f'A{index}'].value, sheet[f'B{index}'].value)
                 if sheet[f'C{index}'].value:
-                    subject_json['subject_name'] = self.get_subject_title(sheet[f'C{index}'].value)
+                    subject_json['title'] = self.get_subject_title(sheet[f'C{index}'].value)
                 if sheet[f'G{index}'].value:
                     subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value,
                                                                        sheet[f'I{index}'].value)
                 if sheet[f'L{index}'].value:
-                    subject_json['subject_pattern'] = self.set_subject_type(sheet[f'L{index}'].value)
+                    subject_json['patterns'] = self.set_subject_type(sheet[f'L{index}'].value)
                 subject_json['instructor'] = self.get_instructor_names(sheet[f'M{index}'].value, sheet[f'N{index}'].value)
                 yield subject_json
 
