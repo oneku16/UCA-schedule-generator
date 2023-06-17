@@ -1,28 +1,32 @@
-from genetic_deap_demo_1.rooms.room_types import LectureRoom, TutorialRoom, LaboratoryRoom, SportRoom
+from genetic_deap_demo_1.types.room_types import LectureRoom, TutorialRoom, LaboratoryRoom, SportRoom
 
 
-class Lecture:
+class SubjectType:
+    ...
+
+
+class Lecture(SubjectType):
     __slots__ = '__required_rooms'
 
     def __init__(self):
         self.__required_rooms = [LectureRoom]
 
 
-class Tutorial:
+class Tutorial(SubjectType):
     __slots__ = '__required_rooms'
 
     def __init__(self):
         self.__required_rooms = [LectureRoom, TutorialRoom]
 
 
-class Laboratory:
+class Laboratory(SubjectType):
     __slots__ = '__required_rooms'
 
     def __init__(self):
         self.__required_rooms = [LaboratoryRoom]
 
 
-class Sport:
+class Sport(SubjectType):
     __slots__ = '__required_rooms'
 
     def __init__(self):

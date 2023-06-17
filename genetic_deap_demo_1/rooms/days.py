@@ -1,7 +1,8 @@
 from collections import deque
+from genetic_deap_demo_1.subjects.subject import Subject
 
 
-class Slot:
+class Slots:
     __slots__ = ('__quarters', '__reserved', '__stack', '__size')
 
     def __init__(self):

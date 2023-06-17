@@ -18,9 +18,6 @@ class LectureTutorial(SuperRoom):
     def __init__(self, room_id, room_capacity, room_name):
         super().__init__(room_id, room_capacity, room_name)
 
-    def test(self):
-        ...
-
 
 class LectureTutorialLaboratory(LectureTutorial):
     def __init__(self, room_id, room_capacity, room_name):
