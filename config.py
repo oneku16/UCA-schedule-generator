@@ -13,7 +13,7 @@ SUBJECT_JSON = {
     'title': None,
     'cohort': None,
     'patterns': None,
-    'instructor': {
+    'instructors': {
     }
 }
 
