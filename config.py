@@ -29,8 +29,8 @@ ROOMS = (
     {'room_id': 209, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Yellow classroom'},
     {'room_id': 109, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'Wet laboratory '},
     {'room_id': 111, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'IT Laboratory '},
-    {'room_id': -14, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Communication and Media lab'},
-    {'room_id': 328, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Hardware laboratory'},
+    {'room_id': -14, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'Communication and Media lab'},
+    {'room_id': 328, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'Hardware laboratory'},
     {'room_id': 104, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Creative room'},
     {'room_id': 100, 'capacity': 100, 'room_type': 'bubble', 'room_name': 'Sport Bubble'}
 )
