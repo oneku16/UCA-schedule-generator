@@ -22,3 +22,9 @@ class Subject:
         preferences = 0
         patterns = len(self.patterns)
         return instructor, preferences, patterns
+
+    def __eq__(self, other):
+        ...
+
+    def __ne__(self, other):
+        ...

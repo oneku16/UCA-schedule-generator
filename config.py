@@ -1,3 +1,7 @@
+from os import path
+
+BASE_DIR = path.dirname(path.realpath(__file__))
+
 DEANS_MEMO_PATH = "sources\\Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
 
 DEPARTMENT_NAMES = (
@@ -32,7 +36,7 @@ ROOMS = (
     {'room_id': -14, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'Communication and Media lab'},
     {'room_id': 328, 'capacity': 25, 'room_type': 'laboratory', 'room_name': 'Hardware laboratory'},
     {'room_id': 104, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Creative room'},
-    {'room_id': 100, 'capacity': 100, 'room_type': 'bubble', 'room_name': 'Sport Bubble'}
+    {'room_id': 100, 'capacity': 100, 'room_type': 'physical_training', 'room_name': 'Sport Bubble'}
 )
 
 SLOTS = (

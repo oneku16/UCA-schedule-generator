@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field, InitVar
-from typing import Dict
 
 
 @dataclass(kw_only=True, slots=True)
@@ -9,12 +8,11 @@ class InstructorBuilder:
     preferences: dict = field(repr=True, default=None)
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(kw_only=True)
 class Instructors:
-    primary: InstructorBuilder = InitVar[Dict]
-    secondary: InstructorBuilder = None
+    primary: InitVar[InstructorBuilder]
+    secondary: InitVar[InstructorBuilder] = None
 
-    def __post_init__(self):
-        self.primary = InstructorBuilder(**self.primary)
-        if self.secondary:
-            self.secondary = InstructorBuilder(**self.secondary)
+    def __post_init__(self, primary, secondary):
+        self.primary = InstructorBuilder(**primary)
+        self.secondary = secondary and InstructorBuilder(**secondary)

@@ -1,51 +1,36 @@
 from openpyxl import load_workbook
 from config import DEANS_MEMO_PATH, DEPARTMENT_NAMES, SUBJECT_JSON
-from typing import List, Any, Tuple
+from typing import List, Any, Dict, Optional, Union
 from copy import deepcopy
 
 
 class Converter:
-    __slots__ = 'xlsx_file', '_TBD'
-
-    class __TBD:
-        _index = 0
-
-        @property
-        def index(self):
-            self._index += 1
-            return f'TBD{self._index}'
-
     def __init__(self):
         self.xlsx_file = load_workbook(DEANS_MEMO_PATH, data_only=True)
-        self._TBD = self.__TBD()
+        self.tbd_index = 0
 
-    def get_xlsx_sheet(self, sheet_name: int | str) -> object:
-        try:
-            if type(sheet_name) is int:
+    def get_xlsx_sheet(self, sheet_name: Union[int, str]) -> Any:
+        if isinstance(sheet_name, int):
+            try:
                 return self.xlsx_file[self.xlsx_file.sheetnames[sheet_name]]
-            return self.xlsx_file[sheet_name]
-        except KeyError:
-            if type(sheet_name) is int:
-                raise "xlsx sheet list index out of range"
+            except IndexError:
+                raise ValueError("Sheet index out of range.")
+        else:
+            try:
+                return self.xlsx_file[sheet_name]
+            except KeyError:
+                raise ValueError("Sheet name does not exist.")
 
     @staticmethod
-    def get_subject_id(subject_area, course_code) -> str:
+    def get_subject_id(subject_area: Any, course_code: Any) -> str:
         return f'{str(subject_area).strip()}{str(course_code).strip()}'.strip()
 
     @staticmethod
     def get_subject_title(subject_title: str) -> str:
         return subject_title.replace(u'\xa0', u' ').strip()
 
-    def set_subject_type(self, subject_patterns) -> tuple[dict, ...]:
-
-        def _wrapper():
-            for subject_pattern in self.get_subject_patterns(subject_patterns):
-                yield subject_pattern
-
-        return list(_wrapper())
-
     @staticmethod
-    def get_subject_patterns(course_types: str) -> List[dict]:
+    def get_subject_patterns(course_types: str) -> List[Dict[str, int]]:
         def _splitter():
             try:
                 for subject_pattern in course_types.split(','):
@@ -57,43 +42,54 @@ class Converter:
         return list(_splitter())
 
     @staticmethod
-    def distribute_by_cohort(undergraduate_year, cohort, cohort_number=None) -> str:
+    def distribute_by_cohort(year_level: str, cohort: str, cohort_number=None) -> str:
         if cohort_number:
             return f'Group {cohort_number[0]} {cohort}'.strip()
-        return f'{"".join(map(str, filter(str.isupper, undergraduate_year)))} {cohort}'.strip()
+        return f'{"".join(map(str, filter(str.isupper, year_level)))} {cohort}'.strip()
 
-    def get_instructor_names(self, primary_instructor: str, secondary_instructor: str | None) -> dict:
-        if primary_instructor:
-            if primary_instructor.strip() == 'TBD':
-                return {'primary': {'instructor_id': None, 'instructor_name': self._TBD.index, 'preferences': None}}
-            instructors = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip(), 'preferences': None}}
+    def get_instructor_names(self, primary_instructor: str, secondary_instructor: Optional[str]) -> Dict[str, Dict[str, str or None]]:
+        instructor_info = {'primary': {'instructor_id': None, 'instructor_name': self.get_next_tbd_index(), 'preferences': None}}
+
+        if primary_instructor and not primary_instructor.strip() == 'TBD':
+            instructor_info = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip(), 'preferences': None}}
             if secondary_instructor:
-                instructors['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip(), 'preferences': None}
-            return instructors
-        return {'primary': {'instructor_id': None, 'instructor_name': self._TBD.index, 'preferences': None}}
+                instructor_info['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip(), 'preferences': None}
 
-    def xlsx_to_json(self, sheet_name='Spring 2023'):
-        def _wrapper():
+        return instructor_info
 
+    def get_next_tbd_index(self) -> str:
+        self.tbd_index += 1
+        return f'TBD{self.tbd_index}'
+
+    def xlsx_to_json(self, sheet_name='Spring 2023') -> List[Dict]:
+        def _producer():
             sheet = self.get_xlsx_sheet(sheet_name)
             cohort = None
-            for index in range(2, sheet.max_row + 1):
+            for row in sheet.iter_rows(min_row=2, values_only=True):
 
                 subject_json = deepcopy(SUBJECT_JSON)
 
-                if sheet[f'A{index}'].value in DEPARTMENT_NAMES:
-                    cohort = sheet[f'A{index}'].value
+                if row[0] in DEPARTMENT_NAMES:
+                    cohort = row[0]
                     continue
-                if sheet[f'A{index}'].value and sheet[f'B{index}'].value:
-                    subject_json['id'] = self.get_subject_id(sheet[f'A{index}'].value, sheet[f'B{index}'].value)
-                if sheet[f'C{index}'].value:
-                    subject_json['title'] = self.get_subject_title(sheet[f'C{index}'].value)
-                if sheet[f'G{index}'].value:
-                    subject_json['cohort'] = self.distribute_by_cohort(cohort, sheet[f'G{index}'].value,
-                                                                       sheet[f'I{index}'].value)
-                if sheet[f'L{index}'].value:
-                    subject_json['patterns'] = self.set_subject_type(sheet[f'L{index}'].value)
-                subject_json['instructors'] = self.get_instructor_names(sheet[f'M{index}'].value, sheet[f'N{index}'].value)
+
+                subject_id = self.get_subject_id(row[0], row[1])
+                subject_title =  self.get_subject_title(row[2])
+                cohort_distribution = self.distribute_by_cohort(cohort, row[6], row[8])
+                subject_patterns = self.get_subject_patterns(row[11])
+                instructors = self.get_instructor_names(row[12], row[13])
+
+                if subject_id:
+                    subject_json['id'] = subject_id
+                if subject_title:
+                    subject_json['title'] = subject_title
+                if cohort_distribution:
+                    subject_json['cohort'] = cohort_distribution
+                if subject_patterns:
+                    subject_json['patterns'] = subject_patterns
+                if instructors:
+                    subject_json['instructors'] = instructors
+
                 yield subject_json
 
-        return list(_wrapper())
+        return list(_producer())
