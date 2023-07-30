@@ -1,8 +1,11 @@
 from typing import List
+from collections import Counter
 
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
-from brute_force_3.rooms import Room, get_room
+from brute_force_3.rooms import Room, get_room, TutorialRoom
+from brute_force_3.schedule_generator import ScheduleGenerator
+from brute_force_3.xlsx_generator.table_generator import TableGenerator
 from config import ROOMS
 from pprint import pprint
 
@@ -13,19 +16,20 @@ def from_json():
 
 
 def main():
+
     from_converter = Converter().xlsx_to_json()
 
     subject_patterns: List[SubjectPattern] = [SubjectPattern(subject_data=subject) for subject in from_converter]
     subject_patterns.sort(key=lambda subject: subject.priority, reverse=True)
-    subject = subject_patterns[0]
 
     rooms: List[Room] = [get_room(**room) for room in ROOMS]
-    room = rooms[0]
 
-    
+    schedule_generator = ScheduleGenerator(rooms=rooms, subject_patterns=subject_patterns)
+    schedules = schedule_generator.balanced_schedule()
 
-
-    # pprint(rooms)
+    for room_name, schedule in schedules.items():
+        table = TableGenerator(title=room_name, sequence=schedule)
+        table.generate_table()
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ from openpyxl.styles import (PatternFill, Border, Side, Alignment, Font)
 from datetime import datetime, timedelta
 from typing import NamedTuple
 
-from brute_force_2.xlsx_generator.base_xlsx import Base
+from brute_force_3.xlsx_generator.base_xlsx import Base
 from config import DAYS
 
 
@@ -14,8 +14,8 @@ class ScheduleTime(NamedTuple):
 
 
 class TableGenerator(Base):
-
-    __slots__ = ('__title', '__sequence', '__work_time', '__time_increment', '__file_name', '__directory_name', '__sheet')
+    __slots__ = (
+            '__title', '__sequence', '__work_time', '__time_increment', '__file_name', '__directory_name', '__sheet')
 
     def __init__(self, title, sequence, work_time=ScheduleTime(), time_increment=15):
         super().__init__(title)
@@ -27,22 +27,46 @@ class TableGenerator(Base):
         self.__sheet = self.get_work_sheet()
 
     def generate_table(self):
-        self.set_base_template('A', 'F')
+        self.set_base_template('B', 'G')
         self.generate_template()
+        columns = ['A', 'B', 'C', 'D', 'E', 'F']
 
-        row_a = 0
-        row_b = 0
-        column = None
-        
+        for day, values in self.__sequence.items():
+            if day:
+                row_a = 0
+                row_b = 0
+                column = None
+                for index, cell in enumerate(self.__sheet[3]):
+                    if str(cell.value).lower() == day.lower():
+                        column = index
+                for value in values:
+                    for index, row in enumerate(self.__sheet['A']):
+                        if row.value == value['start_time']:
+                            row_a = index
+                        if row.value == value['end_time']:
+                            row_b = index
+                    subject = value['subject'].upper()
+                    start_time = value['start_time']
+                    end_time = value['end_time']
+                    cell_desc: str = f'{subject}\n\n{start_time}-{end_time}'
+                    self.border_set(column=column + 1, start_row=row_a + 1, end_row=row_b)
 
+                    try:
+                        self.color_cell(column=columns[column], row=row_a + 1)
+                    except BaseException:
+                        self.color_cell(column=columns[column], row=row_a + 1)
+                    self.__sheet.merge_cells(f'{columns[column]}{row_a + 1}:{columns[column]}{row_b}')
+                    self.write_text(column=columns[column], row=row_a + 1, text=cell_desc, font_type='class')
 
-        for room_name in self.__sequence:
-            ...
-    def generate_template(self, mode: str = 'room'):
+        self.save_xlsx()
+
+    def generate_template(self):
         self.set_time_column()
         columns = ('A', 'B', 'C', 'D', 'E', 'F')
 
         for i, cell in enumerate(columns):
+            self.__sheet.merge_cells(f'{columns[i]}3:{columns[i]}4')
+            self.color_cell(column=columns[i], row=3)
             if cell == 'A':
                 self.__sheet.column_dimensions['A'].width = 15
                 self.write_text(column='A', row=3, text='Duration')
@@ -57,7 +81,7 @@ class TableGenerator(Base):
         self.color_cell(column='A', row=1, color='E0E0E0')
         self.write_text(column='B', row=1, text=self.__title, font_type='title')
 
-    def set_time_column(self, row: int = 5, column: int = 1, start_time=None, end_time=None) -> None:
+    def set_time_column(self, row: int = 6, column: int = 1, start_time=None, end_time=None) -> None:
         if start_time is None:
             start_time = datetime(2023, 7, 12, self.__work_time.start_hour, self.__work_time.start_minute)
         if end_time is None:
@@ -69,7 +93,8 @@ class TableGenerator(Base):
         self.set_time_column(row=row + 1, column=column, start_time=start_time, end_time=end_time)
 
     def text_location(self, column: str, row: int, wrap_text=True):
-        self.__sheet[f'{column}{row}'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=wrap_text)
+        self.__sheet[f'{column}{row}'].alignment = Alignment(horizontal='center', vertical='center',
+                                                             wrap_text=wrap_text)
 
     def font_text(self, column: str, row: int, font_type: str):
         locStyles: dict = {'general': {'name': 'Arial', 'size': 16, 'bold': False, 'color': '00000000'},
@@ -85,18 +110,18 @@ class TableGenerator(Base):
             color = 'E0E0E0'
         self.__sheet[f'{column}{row}'].fill = PatternFill(fill_type='solid', start_color=color, end_color=color, )
 
-    def borderStyle(self, column: str, row: int, border_type: str):
+    def border_style(self, column: str, row: int, border_type: str):
         loc_border = Side(border_style=border_type)
-        self.__sheet[f'{column}{row}'].border = Border(left=loc_border, right=loc_border, bottom=loc_border, top=loc_border)
+        self.__sheet[f'{column}{row}'].border = Border(left=loc_border, right=loc_border, bottom=loc_border,
+                                                       top=loc_border)
+
+    def border_set(self, column: int, start_row: int, end_row: int):
+        locBorder = Side(border_style='medium')
+        for row in self.__sheet.iter_rows(min_row=start_row, min_col=column, max_row=end_row, max_col=column):
+            for cell in row:
+                cell.border = Border(left=locBorder, right=locBorder, bottom=locBorder, top=locBorder)
 
     def write_text(self, column: str, row: int, text: str, font_type: str = 'general', wrap_text: bool = True):
         self.__sheet[f'{column}{row}'] = text
         self.text_location(column=column, row=row, wrap_text=wrap_text)
         self.font_text(column=column, row=row, font_type=font_type)
-
-    def borderSet(self, column: int, start_row: int, end_row: int):
-        loc_border = Side(border_style='medium')
-        for row in self.__sheet.iter_rows(min_row=start_row, min_col=column, max_row=end_row, max_col=column):
-            for cell in row:
-                cell.border = Border(left=loc_border, right=loc_border, bottom=loc_border, top=loc_border)
-
