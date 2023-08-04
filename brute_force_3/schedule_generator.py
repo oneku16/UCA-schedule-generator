@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import ndarray
 
-from .rooms import Room, Days, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
+from .rooms import Room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
 from .patterns import SubjectPattern
 from .subject import Subject, Tutorial, Lecture, Laboratory
 
@@ -14,11 +14,40 @@ from sys import setrecursionlimit
 setrecursionlimit(100_000)
 
 
+class BalanceSchedule:
+    __slots__ = ('__slots', '__priorities')
+
+    def __init__(self, slots):
+        self.__slots = slots
+        self.__priorities = dict()
+
+    def get_best_slot(self):
+        ...
+
+    def __empty_slots(self):
+        for quarter_index, quarter in enumerate(self.__slots):
+            for day_index, day in enumerate(quarter):
+                if day == 0.0:
+                    yield quarter_index, day_index
+
+    @staticmethod
+    def __iterate_through_week_by_row(row):
+        for index, day in enumerate(row):
+            if day == 0.0:
+                yield index
+
+    def __evaluate_slot(self):
+        slot_price = {'left_side': 0, 'right_side': 0,}
+        for quarter_index, day_index in self.__empty_slots():
+            _days = list(self.__iterate_through_week_by_row(self.__slots[quarter_index]))
+
+
 class ScheduleGenerator:
     __slots__ = ('rooms', 'subject_patterns', 'used_subjects', 'used_rooms')
 
     def __init__(self, *, rooms, subject_patterns):
         self.rooms: List[Room] = rooms
+        shuffle(self.rooms)
         self.subject_patterns: List[SubjectPattern] = subject_patterns
 
     @staticmethod
@@ -44,7 +73,7 @@ class ScheduleGenerator:
     def __get_preferred_rooms(self, subject: Subject):
         preferred_rooms = list()
         for room_id in subject.instructors.primary.preferences.rooms:
-            for room_index, room in self.rooms:
+            for room_index, room in enumerate(self.rooms):
                 if room_id == room.room_id:
                     preferred_rooms.append(room_index)
 
@@ -88,8 +117,6 @@ class ScheduleGenerator:
                     return True
         raise 'Not Found'
 
-    a = []
-
     def __set_lecture_subject(self, subject: Subject, day_slot=None) -> bool:
         preferred_rooms = self.__get_preferred_rooms(subject=subject)
         if day_slot is None:
@@ -118,7 +145,7 @@ class ScheduleGenerator:
     def __get_best_day(self, unique_id: str) -> int:
         schedule_map = self.__get_schedule_map(unique_id=unique_id)
         column_sum = np.sum(a=schedule_map, axis=0)
-        day_index = 0
+        day_index = choice((0, 4))
         if column_sum.sum() % column_sum.size:
             center_of_mass = np.average(np.arange(column_sum.size), weights=column_sum)
             day_index = int((column_sum.size - 1) - int(round(center_of_mass)))
@@ -194,5 +221,3 @@ class ScheduleGenerator:
             for subject in subject_pattern.subjects:
                 if subject.subject_status:
                     yield subject
-
-

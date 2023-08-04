@@ -53,7 +53,7 @@ class TableGenerator(Base):
 
                     try:
                         self.color_cell(column=columns[column], row=row_a + 1)
-                    except BaseException:
+                    except BaseException as e:
                         self.color_cell(column=columns[column], row=row_a + 1)
                     self.__sheet.merge_cells(f'{columns[column]}{row_a + 1}:{columns[column]}{row_b}')
                     self.write_text(column=columns[column], row=row_a + 1, text=cell_desc, font_type='class')

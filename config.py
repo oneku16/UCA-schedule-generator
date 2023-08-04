@@ -23,6 +23,7 @@ SUBJECT_JSON = {
 SUBJECT_PATTERNS = ('lecture', 'tutorial', 'laboratory',)
 
 DAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',)
+QUARTERS = (1, 2, 3, 4)
 
 ROOMS = (
     {'room_id': 201, 'capacity': 25, 'room_type': 'lecture', 'room_name': 'Red classroom'},
