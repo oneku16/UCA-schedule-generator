@@ -46,3 +46,10 @@ SLOTS = (
     {'hour': '14', 'minute': '00', 'duration': 90},
     {'hour': '16', 'minute': '00', 'duration': 90}
 )
+
+PRIORITY = {
+        'right_slot': 1,
+        'left_slot': 0,
+        'subjects_in_days': 2,
+        'subjects_in_quarter': 3,
+}

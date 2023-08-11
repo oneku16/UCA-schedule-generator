@@ -1,45 +1,16 @@
 import numpy as np
-from numpy import ndarray
+from dataclasses import dataclass, field
 
-from .rooms import Room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
-from .patterns import SubjectPattern
-from .subject import Subject, Tutorial, Lecture, Laboratory
+from brute_force_3.rooms import Room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
+from brute_force_3.patterns import SubjectPattern
+from brute_force_3.subject import Subject, Tutorial, Lecture, Laboratory
+from config import DAYS, QUARTERS, PRIORITY
 
-from random import shuffle, randint, choice
-from datetime import datetime, timedelta
-from typing import List, Any, Tuple
-import numpy
+from random import shuffle, choice
+from typing import List
 from sys import setrecursionlimit
 
 setrecursionlimit(100_000)
-
-
-class BalanceSchedule:
-    __slots__ = ('__slots', '__priorities')
-
-    def __init__(self, slots):
-        self.__slots = slots
-        self.__priorities = dict()
-
-    def get_best_slot(self):
-        ...
-
-    def __empty_slots(self):
-        for quarter_index, quarter in enumerate(self.__slots):
-            for day_index, day in enumerate(quarter):
-                if day == 0.0:
-                    yield quarter_index, day_index
-
-    @staticmethod
-    def __iterate_through_week_by_row(row):
-        for index, day in enumerate(row):
-            if day == 0.0:
-                yield index
-
-    def __evaluate_slot(self):
-        slot_price = {'left_side': 0, 'right_side': 0,}
-        for quarter_index, day_index in self.__empty_slots():
-            _days = list(self.__iterate_through_week_by_row(self.__slots[quarter_index]))
 
 
 class ScheduleGenerator:
@@ -49,10 +20,6 @@ class ScheduleGenerator:
         self.rooms: List[Room] = rooms
         shuffle(self.rooms)
         self.subject_patterns: List[SubjectPattern] = subject_patterns
-
-    @staticmethod
-    def __prioritized_room(rooms: List[Room]):
-        ...
 
     def __get_potential_slots(self, subject: Subject):
         potential_rooms = list()
@@ -76,11 +43,10 @@ class ScheduleGenerator:
             for room_index, room in enumerate(self.rooms):
                 if room_id == room.room_id:
                     preferred_rooms.append(room_index)
-
         return preferred_rooms
 
-    def __get_schedule_map(self, unique_id: str | int) -> ndarray:
-        schedule_map = numpy.zeros((4, 5))
+    def __get_schedule_map(self, unique_id: str | int) -> np.ndarray:
+        schedule_map = np.zeros((4, 5))
         for room in self.rooms:
             for day_index, day in enumerate(room.days):
                 for slot_index, slot in day.quarters.items():
@@ -117,6 +83,11 @@ class ScheduleGenerator:
                     return True
         raise 'Not Found'
 
+    def __get_slot(self, subject_unique_id):
+        room_map = self.__get_schedule_map(subject_unique_id)
+        balanced = Balancer(room_map=room_map)
+        return balanced.get_slot
+
     def __set_lecture_subject(self, subject: Subject, day_slot=None) -> bool:
         preferred_rooms = self.__get_preferred_rooms(subject=subject)
         if day_slot is None:
@@ -124,22 +95,28 @@ class ScheduleGenerator:
 
         for room_index in preferred_rooms:
             if self.rooms[room_index].days[day_slot].get_slot(subject=subject):
-                _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
-                self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
+                # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
+                self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
                 return True
         else:
             for room_index in range(len(self.rooms)):
                 if isinstance(self.rooms[room_index], (LectureRoom,)) and self.rooms[room_index].days[day_slot].slots_for_subject(subject):
-                    _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
-                    self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                    # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
+                    # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                    quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
+                    self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
                     return True
 
         for room_index in range(len(self.rooms)):
             if isinstance(self.rooms[room_index], (LectureRoom,)) and self.rooms[room_index].is_slot_available():
                 for day_slot, day in enumerate(self.rooms[room_index].days):
                     if day.slots_for_subject(subject=subject):
-                        _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
-                        self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                        # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
+                        # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                        quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
+                        self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
                         return True
 
     def __get_best_day(self, unique_id: str) -> int:
@@ -150,9 +127,6 @@ class ScheduleGenerator:
             center_of_mass = np.average(np.arange(column_sum.size), weights=column_sum)
             day_index = int((column_sum.size - 1) - int(round(center_of_mass)))
         return day_index
-
-    def __evaluate_slot(self, room: Room, subject: Subject):
-        ...
 
     def __place_subject(self, subject_pattern_index: int, subject_index: int, preferred_rooms: List[int] = None) -> None:
         subject = self.subject_patterns[subject_pattern_index].subjects[subject_index]
@@ -186,30 +160,6 @@ class ScheduleGenerator:
 
         return schedule
 
-    def balanced(self):
-        schedule = dict()
-        shuffle(self.subject_patterns)
-        for subject_pattern in self.subject_patterns:
-            for subject in subject_pattern.subjects:
-                status = False
-                for room_index, room in enumerate(self.rooms):
-                    if isinstance(room, subject.subject_type):
-                        for day_index, day in enumerate(room.days):
-                            slots = day.get_slot(subject=subject)
-                            if slots is False:
-                                continue
-                            if isinstance(slots, (tuple, int)):
-                                status = True
-                                self.rooms[room_index].days[day_index].set_subject(slot=slots, subject=subject)
-                                break
-                if status:
-                    break
-
-        for room in self.rooms:
-            schedule[room.room_name] = room.get_schedule()
-
-        return schedule
-
     def empty_rooms(self, subject: Subject):
         print(subject, type(subject))
         for room in self.rooms:
@@ -221,3 +171,112 @@ class ScheduleGenerator:
             for subject in subject_pattern.subjects:
                 if subject.subject_status:
                     yield subject
+
+
+@dataclass
+class Prices:
+    room_map: np.zeros
+    quarter_index: int
+    day_index: int
+    empty_quarter: bool = True
+    price: list = field(default_factory=lambda: np.zeros([4]))
+    left_neighbor: float | None = field(init=False)
+    right_neighbor: float | None = field(init=False)
+    subjects_in_quarter: int | None = field(init=False)
+    subjects_in_days: int | None = field(init=False)
+
+    def __post_init__(self):
+        self.subjects_in_quarter = self.__count_subjects_in_quarter()
+        self.subjects_in_days = self.__count_subjects_in_days()
+        self.left_neighbor = self.__count_neighbors_for_left()
+        self.right_neighbor = self.__count_neighbors_for_right()
+
+    @property
+    def get_price(self, priority=None):
+        if priority is None:
+            priority = PRIORITY.copy()
+        self.price[priority['right_slot']] = self.right_neighbor
+        self.price[priority['left_slot']] = self.left_neighbor
+        self.price[priority['subjects_in_days']] = self.subjects_in_days
+        self.price[priority['subjects_in_quarter']] = self.subjects_in_quarter
+        return self.price
+
+    def __count_subjects_in_quarter(self):
+        return self.quarter_iterator(self.room_map[:, self.day_index])
+
+    def __count_subjects_in_days(self):
+        return self.quarter_iterator(self.room_map[self.quarter_index, :])
+
+    @staticmethod
+    def quarter_iterator(column):
+        counter = .0
+        for val in column:
+            if not np.isnan(val):
+                counter += val
+        if any(item == .0 for item in column):
+            return False or counter
+        return False
+
+    def __count_neighbors_for_left(self):
+        if self.day_index == 0:
+            return None
+        return self.quarter_iterator(self.room_map[:, self.day_index - 1])
+
+    def __count_neighbors_for_right(self):
+        if self.day_index == len(DAYS) - 1:
+            return None
+        return self.quarter_iterator(self.room_map[:, self.day_index + 1])
+
+
+@dataclass
+class Tools:
+    prices: Prices
+
+
+class Balancer:
+    __slots__ = ('__room_map',)
+
+    def __init__(self, room_map=None):
+        self.__room_map = room_map
+
+    def __get_slot(self, quarter_index, day_index):
+        tools = Tools(Prices(room_map=self.room_map, quarter_index=quarter_index, day_index=day_index))
+        return tools
+
+    def __get_empty_slots(self):
+        slots = dict()
+        for quarter_index in range(len(QUARTERS)):
+            for day_index in range(len(DAYS)):
+                if self.room_map[quarter_index, day_index] == .0:
+                    tools = self.__get_slot(quarter_index, day_index)
+                    slots[(quarter_index, day_index)] = {'price': tools.prices.get_price, 'tools': tools}
+        slots = {
+                key: value for key, value in sorted(
+                    slots.items(),
+                    key=lambda item: (
+                            item[-1]['price'][PRIORITY['subjects_in_quarter']],
+                            item[-1]['price'][PRIORITY['subjects_in_days']],
+                            -item[-1]['price'][PRIORITY['left_slot']] - item[-1]['price'][PRIORITY['right_slot']]
+                    ),
+                    reverse=True
+                )
+        }
+        return slots or None
+
+    def __balance(self):
+        ...
+
+    def __fitness(self):
+        ...
+
+    @property
+    def get_slot(self) -> tuple[int, int]:
+        return next(iter(self.__get_empty_slots()))
+
+    @property
+    def room_map(self) -> np.zeros:
+        return self.__room_map
+
+    @room_map.setter
+    def room(self, room_map: np.zeros):
+        self.__room_map = room_map
