@@ -26,37 +26,36 @@ class TableGenerator(Base):
         self.__file_name = f'{self.__title}.xlsx'
         self.__sheet = self.get_work_sheet()
 
-    def generate_table(self):
+    def generate_table(self, mode='room'):
         self.set_base_template('B', 'G')
         self.generate_template()
         columns = ['A', 'B', 'C', 'D', 'E', 'F']
 
-        for day, values in self.__sequence.items():
-            if day:
-                row_a = 0
-                row_b = 0
-                column = None
-                for index, cell in enumerate(self.__sheet[3]):
-                    if str(cell.value).lower() == day.lower():
-                        column = index
-                for value in values:
-                    for index, row in enumerate(self.__sheet['A']):
-                        if row.value == value['start_time']:
-                            row_a = index
-                        if row.value == value['end_time']:
-                            row_b = index
-                    subject = value['subject'].upper()
-                    start_time = value['start_time']
-                    end_time = value['end_time']
-                    cell_desc: str = f'{subject}\n\n{start_time}-{end_time}'
-                    self.border_set(column=column + 1, start_row=row_a + 1, end_row=row_b)
-
-                    try:
-                        self.color_cell(column=columns[column], row=row_a + 1)
-                    except BaseException as e:
-                        self.color_cell(column=columns[column], row=row_a + 1)
-                    self.__sheet.merge_cells(f'{columns[column]}{row_a + 1}:{columns[column]}{row_b}')
-                    self.write_text(column=columns[column], row=row_a + 1, text=cell_desc, font_type='class')
+        for values in self.__sequence:
+            row_a = None
+            row_b = None
+            column = None
+            for index, cell in enumerate(self.__sheet[3]):
+                if str(cell.value).lower() == values['day'].lower():
+                    column = index
+            for index, row in enumerate(self.__sheet['A']):
+                if row_a is None and row.value == values['start_time']:
+                    row_a = index
+                if row_b is None and row.value == values['end_time']:
+                    row_b = index
+            subject = values['subject'].upper()
+            start_time = values['start_time']
+            end_time = values['end_time']
+            instructor = values['instructor'] if values.get('instructor', None) else ''
+            room = values['room'] if values.get('room', None) else ''
+            cell_desc: str = f'{subject}\n{instructor}\n{room}\n{start_time}-{end_time}'
+            self.border_set(column=column + 1, start_row=row_a + 1, end_row=row_b)
+            try:
+                self.color_cell(column=columns[column], row=row_a + 1)
+            except BaseException as e:
+                self.color_cell(column=columns[column], row=row_a + 1)
+            self.__sheet.merge_cells(f'{columns[column]}{row_a + 1}:{columns[column]}{row_b}')
+            self.write_text(column=columns[column], row=row_a + 1, text=cell_desc, font_type='class')
 
         self.save_xlsx()
 

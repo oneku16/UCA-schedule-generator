@@ -18,7 +18,7 @@ class ScheduleGenerator:
 
     def __init__(self, *, rooms, subject_patterns):
         self.rooms: List[Room] = rooms
-        shuffle(self.rooms)
+        # shuffle(self.rooms)
         self.subject_patterns: List[SubjectPattern] = subject_patterns
 
     def __get_potential_slots(self, subject: Subject):
@@ -45,18 +45,30 @@ class ScheduleGenerator:
                     preferred_rooms.append(room_index)
         return preferred_rooms
 
-    def __get_schedule_map(self, unique_id: str | int) -> np.ndarray:
+    def __get_schedule_map(self, unique_id: str | int, room_index: int = None) -> np.ndarray:
         schedule_map = np.zeros((4, 5))
+        if room_index is not None:
+            for day_index, day in enumerate(self.rooms[room_index].days):
+                for slot_index, slot in day.quarters.items():
+                    if slot.status and slot.subject.unique_id != unique_id:
+                        if day.is_merged(slot_index=slot_index - 1):
+                            first, second = day.is_merged(slot_index=slot_index - 1)
+                            schedule_map[second][day_index] = np.nan
+                            schedule_map[first][day_index] = np.nan
+                        else:
+                            schedule_map[slot_index - 1][day_index] = np.nan
+
         for room in self.rooms:
             for day_index, day in enumerate(room.days):
                 for slot_index, slot in day.quarters.items():
-                    if slot.status and slot.subject.unique_id == unique_id:
-                        if day.is_merged(slot_index=slot_index - 1):
-                            first, second = day.is_merged(slot_index=slot_index - 1)
-                            schedule_map[second][day_index] = 0.5
-                            schedule_map[first][day_index] = 0.5
-                        else:
-                            schedule_map[slot_index - 1][day_index] = 1
+                    if slot.status:
+                        if slot.subject.unique_id == unique_id:
+                            if day.is_merged(slot_index=slot_index - 1):
+                                first, second = day.is_merged(slot_index=slot_index - 1)
+                                schedule_map[second][day_index] = 0.5
+                                schedule_map[first][day_index] = 0.5
+                            else:
+                                schedule_map[slot_index - 1][day_index] = 1
         return schedule_map
 
     @staticmethod
@@ -83,8 +95,8 @@ class ScheduleGenerator:
                     return True
         raise 'Not Found'
 
-    def __get_slot(self, subject_unique_id):
-        room_map = self.__get_schedule_map(subject_unique_id)
+    def __get_slot(self, subject_unique_id, room_index):
+        room_map = self.__get_schedule_map(subject_unique_id, room_index)
         balanced = Balancer(room_map=room_map)
         return balanced.get_slot
 
@@ -97,17 +109,18 @@ class ScheduleGenerator:
             if self.rooms[room_index].days[day_slot].get_slot(subject=subject):
                 # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
                 # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
-                quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
+                quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id, room_index=room_index)
                 self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
                 return True
         else:
             for room_index in range(len(self.rooms)):
-                if isinstance(self.rooms[room_index], (LectureRoom,)) and self.rooms[room_index].days[day_slot].slots_for_subject(subject):
-                    # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
-                    # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
-                    quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
-                    self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
-                    return True
+                if isinstance(self.rooms[room_index], (LectureRoom,)):
+                    if self.rooms[room_index].days[day_slot].slots_for_subject(subject):
+                        # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
+                        # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
+                        quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id, room_index=room_index)
+                        self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
+                        return True
 
         for room_index in range(len(self.rooms)):
             if isinstance(self.rooms[room_index], (LectureRoom,)) and self.rooms[room_index].is_slot_available():
@@ -115,7 +128,7 @@ class ScheduleGenerator:
                     if day.slots_for_subject(subject=subject):
                         # _, slots = self.rooms[room_index].days[day_slot].slots_for_subject(subject=subject, _status=False)
                         # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
-                        quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id)
+                        quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id, room_index=room_index)
                         self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
                         return True
 
@@ -154,11 +167,6 @@ class ScheduleGenerator:
 
         for subject_pattern_index, subject_index in self.__separate(Lecture):
             self.__place_subject(subject_pattern_index=subject_pattern_index, subject_index=subject_index)
-
-        for room in self.rooms:
-            schedule[room.room_name] = room.get_schedule()
-
-        return schedule
 
     def empty_rooms(self, subject: Subject):
         print(subject, type(subject))
@@ -214,7 +222,7 @@ class Prices:
             if not np.isnan(val):
                 counter += val
         if any(item == .0 for item in column):
-            return False or counter
+            return counter
         return False
 
     def __count_neighbors_for_left(self):
@@ -237,7 +245,10 @@ class Balancer:
     __slots__ = ('__room_map',)
 
     def __init__(self, room_map=None):
-        self.__room_map = room_map
+        if room_map is None:
+            self.__room_map = np.zeros([4, 5])
+        else:
+            self.__room_map = room_map
 
     def __get_slot(self, quarter_index, day_index):
         tools = Tools(Prices(room_map=self.room_map, quarter_index=quarter_index, day_index=day_index))
@@ -254,9 +265,13 @@ class Balancer:
                 key: value for key, value in sorted(
                     slots.items(),
                     key=lambda item: (
+                            # min(
+                            -item[-1]['price'][PRIORITY['left_slot']] - item[-1]['price'][PRIORITY['right_slot']],
+                            -item[-1]['price'][PRIORITY['left_slot']] is None or item[-1]['price'][PRIORITY['right_slot']],
+                            # ),
                             item[-1]['price'][PRIORITY['subjects_in_quarter']],
                             item[-1]['price'][PRIORITY['subjects_in_days']],
-                            -item[-1]['price'][PRIORITY['left_slot']] - item[-1]['price'][PRIORITY['right_slot']]
+
                     ),
                     reverse=True
                 )
@@ -280,3 +295,7 @@ class Balancer:
     @room_map.setter
     def room(self, room_map: np.zeros):
         self.__room_map = room_map
+
+
+if __name__ == '__main__':
+    main()

@@ -128,6 +128,7 @@ class Tutorial(Subject):
 
     def __str__(self):
         return self.update_me_later
+
     def __repr__(self):
         return f'Tutorial(room_id={self.unique_id}'
 

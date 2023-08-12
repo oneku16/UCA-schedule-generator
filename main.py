@@ -7,6 +7,7 @@ from brute_force_3.rooms import Room, get_room, TutorialRoom
 from brute_force_3.schedule_generator import ScheduleGenerator
 from brute_force_3.xlsx_generator.table_generator import TableGenerator
 from config import ROOMS
+from brute_force_3.serializer import Serializer
 from pprint import pprint
 
 
@@ -25,11 +26,26 @@ def main():
     rooms: List[Room] = [get_room(**room) for room in ROOMS]
 
     schedule_generator = ScheduleGenerator(rooms=rooms, subject_patterns=subject_patterns)
-    schedules = schedule_generator.balanced_schedule()
+    schedule_generator.balanced_schedule()
 
-    for room_name, schedule in schedules.items():
-        table = TableGenerator(title=room_name, sequence=schedule)
-        table.generate_table()
+    for room in schedule_generator.rooms:
+        for day in room.days:
+            for _, slot in day.quarters.items():
+                if slot.subject and slot.subject.cohort == 'Group 1 Preparatory':
+                    cohort = slot.subject.cohort
+                    subject = f'{slot.subject.title}'
+                    start_time = slot.start_time
+                    end_time = slot.end_time
+                    instructor = slot.subject.instructors.primary.instructor_name
+                    room_name = room.room_name
+                    # print(f'{cohort=}\n{subject=}\n{start_time}-{end_time}\n{instructor}\n{room_name}\n')
+
+    serializer = Serializer(rooms=schedule_generator.rooms)
+    schedules = serializer.room_mode_to_cohort()
+
+    # for cohort, schedule in schedules.items():
+    #     table = TableGenerator(title=cohort, sequence=schedule)
+    #     table.generate_table()
 
 
 if __name__ == '__main__':
