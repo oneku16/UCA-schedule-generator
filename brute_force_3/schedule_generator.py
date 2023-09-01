@@ -119,6 +119,7 @@ class ScheduleGenerator:
                         # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
                         quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id, room_index=room_index)
                         self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
+                        # print(self.rooms[room_index].days[day_index].quarters[quarter_index + 1].subject)
                         return True
 
         for room_index in range(len(self.rooms)):
@@ -129,6 +130,7 @@ class ScheduleGenerator:
                         # self.rooms[room_index].days[day_slot].set_subject(slot=slots[0], subject=subject)
                         quarter_index, day_index = self.__get_slot(subject_unique_id=subject.unique_id, room_index=room_index)
                         self.rooms[room_index].days[day_index].set_subject(slot=quarter_index + 1, subject=subject)
+                        # print(self.rooms[room_index].days[day_index].quarters[quarter_index + 1].subject)
                         return True
 
     def __get_best_day(self, unique_id: str) -> int:

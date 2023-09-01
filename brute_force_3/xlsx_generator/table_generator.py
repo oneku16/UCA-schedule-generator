@@ -1,9 +1,15 @@
-from openpyxl.styles import (PatternFill, Border, Side, Alignment, Font)
+from openpyxl.styles import (
+    PatternFill,
+    Border,
+    Side,
+    Alignment,
+    Font,
+)
 from datetime import datetime, timedelta
 from typing import NamedTuple
 
 from brute_force_3.xlsx_generator.base_xlsx import Base
-from config import DAYS
+from config import DAYS, ROOM_COLOR
 
 
 class ScheduleTime(NamedTuple):
@@ -29,33 +35,34 @@ class TableGenerator(Base):
     def generate_table(self, mode='room'):
         self.set_base_template('B', 'G')
         self.generate_template()
-        columns = ['A', 'B', 'C', 'D', 'E', 'F']
+        columns = ('A', 'B', 'C', 'D', 'E', 'F')
 
         for values in self.__sequence:
-            row_a = None
-            row_b = None
-            column = None
-            for index, cell in enumerate(self.__sheet[3]):
-                if str(cell.value).lower() == values['day'].lower():
-                    column = index
-            for index, row in enumerate(self.__sheet['A']):
-                if row_a is None and row.value == values['start_time']:
-                    row_a = index
-                if row_b is None and row.value == values['end_time']:
-                    row_b = index
-            subject = values['subject'].upper()
-            start_time = values['start_time']
-            end_time = values['end_time']
-            instructor = values['instructor'] if values.get('instructor', None) else ''
-            room = values['room'] if values.get('room', None) else ''
-            cell_desc: str = f'{subject}\n{instructor}\n{room}\n{start_time}-{end_time}'
+            row_a = row_b = column = None
+            start_time, end_time = values['start_time'], values['end_time']
+            subject = values['subject']
+            room = values['room']
+            day = values['day']
+
+            for row_index, cell in enumerate(self.__sheet['A']):
+                if cell.value == start_time:
+                    row_a = row_index
+                    continue
+                if cell.value == end_time:
+                    row_b = row_index
+                    break
+
+            for column_index in range(1, len(columns)):
+                if self.__sheet[f'{columns[column_index]}3'].value == day:
+                    column = column_index
+                    break
+
+            cell_value: str = f'{subject}\n\n{start_time}-{end_time}\nroom:{room}'
+
             self.border_set(column=column + 1, start_row=row_a + 1, end_row=row_b)
-            try:
-                self.color_cell(column=columns[column], row=row_a + 1)
-            except BaseException as e:
-                self.color_cell(column=columns[column], row=row_a + 1)
+            self.color_cell(column=columns[column], row=row_a + 1, color=ROOM_COLOR.get(room.split()[-1], 'FFFFFF'))
             self.__sheet.merge_cells(f'{columns[column]}{row_a + 1}:{columns[column]}{row_b}')
-            self.write_text(column=columns[column], row=row_a + 1, text=cell_desc, font_type='class')
+            self.write_text(column=columns[column], row=row_a + 1, text=cell_value, font_type='class')
 
         self.save_xlsx()
 
@@ -107,20 +114,34 @@ class TableGenerator(Base):
     def color_cell(self, column: str, row: int, color=None):
         if color is None:
             color = 'E0E0E0'
-        self.__sheet[f'{column}{row}'].fill = PatternFill(fill_type='solid', start_color=color, end_color=color, )
+        self.__sheet[f'{column}{row}'].fill = PatternFill(fill_type='solid',
+                                                          start_color=color,
+                                                          end_color=color)
 
     def border_style(self, column: str, row: int, border_type: str):
         loc_border = Side(border_style=border_type)
-        self.__sheet[f'{column}{row}'].border = Border(left=loc_border, right=loc_border, bottom=loc_border,
+        self.__sheet[f'{column}{row}'].border = Border(left=loc_border,
+                                                       right=loc_border,
+                                                       bottom=loc_border,
                                                        top=loc_border)
 
     def border_set(self, column: int, start_row: int, end_row: int):
-        locBorder = Side(border_style='medium')
-        for row in self.__sheet.iter_rows(min_row=start_row, min_col=column, max_row=end_row, max_col=column):
+        loc_border = Side(border_style='medium')
+        for row in self.__sheet.iter_rows(min_row=start_row,
+                                          min_col=column,
+                                          max_row=end_row,
+                                          max_col=column):
             for cell in row:
-                cell.border = Border(left=locBorder, right=locBorder, bottom=locBorder, top=locBorder)
+                cell.border = Border(left=loc_border,
+                                     right=loc_border,
+                                     bottom=loc_border,
+                                     top=loc_border)
 
     def write_text(self, column: str, row: int, text: str, font_type: str = 'general', wrap_text: bool = True):
         self.__sheet[f'{column}{row}'] = text
-        self.text_location(column=column, row=row, wrap_text=wrap_text)
-        self.font_text(column=column, row=row, font_type=font_type)
+        self.text_location(column=column,
+                           row=row,
+                           wrap_text=wrap_text)
+        self.font_text(column=column,
+                       row=row,
+                       font_type=font_type)

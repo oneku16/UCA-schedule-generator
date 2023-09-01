@@ -87,10 +87,8 @@ class Balancer:
                 key: value for key, value in sorted(
                     slots.items(),
                     key=lambda item: (
-                            # min(
                             -item[-1]['price'][PRIORITY['left_slot']] - item[-1]['price'][PRIORITY['right_slot']],
-                            -item[-1]['price'][PRIORITY['left_slot']] is None or item[-1]['price'][PRIORITY['right_slot']],
-                            # ),
+                            -item[-1]['price'][PRIORITY['left_slot']] or item[-1]['price'][PRIORITY['right_slot']],
                             item[-1]['price'][PRIORITY['subjects_in_quarter']],
                             item[-1]['price'][PRIORITY['subjects_in_days']],
 

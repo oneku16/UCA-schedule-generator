@@ -21,7 +21,7 @@ class Serializer:
                         start_time = slot.start_time
                         end_time = slot.end_time
                         instructor = slot.subject.instructors.primary.instructor_name
-                        room_name = room.room_name
+                        room_name = f'{room.room_name}: {room.room_id}'
                         cohort_schedule[cohort].append({
                                 'subject': subject,
                                 'instructor': instructor,
