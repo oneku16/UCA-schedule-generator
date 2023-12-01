@@ -74,7 +74,7 @@ class Converter:
                     continue
 
                 subject_id = self.get_subject_id(row[0], row[1])
-                subject_title =  self.get_subject_title(row[2])
+                subject_title = self.get_subject_title(row[2])
                 cohort_distribution = self.distribute_by_cohort(cohort, row[6], row[8])
                 subject_patterns = self.get_subject_patterns(row[11])
                 instructors = self.get_instructor_names(row[12], row[13])

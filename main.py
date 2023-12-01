@@ -30,8 +30,8 @@ def main():
 
     serializer = Serializer(rooms=schedule_generator.rooms)
     schedules = serializer.room_mode_to_cohort()
-    pprint(from_converter)
-
+    # pprint(from_converter)
+    pprint(schedules)
     for cohort, schedule in schedules.items():
         table = TableGenerator(title=cohort, sequence=schedule)
         table.generate_table()
