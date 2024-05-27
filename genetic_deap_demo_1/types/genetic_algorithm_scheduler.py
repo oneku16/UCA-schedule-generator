@@ -30,13 +30,13 @@ class GeneticAlgorithmScheduler:
         individual = creator.Individual()
         for group in groups:
             for subject in subjects:
-                if (group.course != subject.course):
+                if group.course != subject.course:
                     continue
                 for _ in range(subject.number_of_hours // 2):  # Prioritize 2-hour blocks
                     teacher_id = subject.teachers
                     teacher = next(t for t in teachers if t.id == teacher_id)
                     classroom = random.choice(classrooms)
-                    day = random.choice(range(6))
+                    day = random.choice(range(5))
                     slot = random.choice(range(10))  # Allow space for 2-hour blocks
                     individual.append((group, subject, teacher, classroom, day, slot))
                     individual.append((group, subject, teacher, classroom, day, slot + 1))
@@ -54,15 +54,15 @@ class GeneticAlgorithmScheduler:
 
             for group_course in range(1, 5):
                 cell = schedule.slots[group_course][day][slot]
-                if (not cell):
+                if not cell:
                     continue
                 # print(cell['subject'], subject.id)
-                if (cell['subject'] == subject.id):
+                if cell['subject'] == subject.id:
                     score += 10
 
-                if (cell['teacher'] == teacher.id):
+                if cell['teacher'] == teacher.id:
                     score += 10
-                if (cell['classroom'] == classroom.id):
+                if cell['classroom'] == classroom.id:
                     score += 10
 
             if slot == 5:
@@ -89,21 +89,21 @@ class GeneticAlgorithmScheduler:
 
         for hour in range(11):  # Update the loop range to 10
             for course in range(1, 5):
-                for day in range(0, 6):
+                for day in range(0, 5):
                     cell = schedule.slots[course][day][hour]
                     if (hour < 10):
-                        nextcell = schedule.slots[course][day][hour + 1]
-                        if cell and nextcell and cell['subject'] == nextcell['subject'] and cell['classroom'] ==\
-                                nextcell['classroom']:
+                        next_cell = schedule.slots[course][day][hour + 1]
+                        if cell and next_cell and cell['subject'] == next_cell['subject'] and cell['classroom'] ==\
+                                next_cell['classroom']:
                             score -= 10  # Decrease score for consecutive subject slots (2-hour block)
 
-                    if (not schedule.slots[course][day][hour]):
-                        if (hour != 5):
+                    if not schedule.slots[course][day][hour]:
+                        if hour != 5:
                             score += 5 * (10 - hour)
 
-                    if (hour > 0):
+                    if hour > 0:
                         prevcell = schedule.slots[course][day][hour - 1]
-                        if (not prevcell and not cell and prevcell != cell):
+                        if not prevcell and not cell and prevcell != cell:
                             score += 5
 
         for course, group_schedule in schedule.slots.items():
@@ -118,7 +118,7 @@ class GeneticAlgorithmScheduler:
                         score += 5 * abs(subject_hours[subject.id] - subject.number_of_hours)
 
         # Minimize teacher idle time
-        for day in range(6):
+        for day in range(5):
             for teacher in teachers:
                 last_slot = -1
                 for hour in range(11):
@@ -137,7 +137,7 @@ class GeneticAlgorithmScheduler:
         # Minimize consecutive classes
         consecutive_classes = 0
         for course in range(1, 5):
-            for day in range(6):
+            for day in range(5):
                 for hour in range(1, 11):
                     cell = schedule.slots[course][day][hour]
                     prevcell = schedule.slots[course][day][hour - 1]

@@ -1,6 +1,6 @@
 from typing import List
 from collections import Counter
-
+import bisect
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
 from brute_force_3.rooms import Room, get_room, TutorialRoom
@@ -31,7 +31,7 @@ def main():
     serializer = Serializer(rooms=schedule_generator.rooms)
     schedules = serializer.room_mode_to_cohort()
     # pprint(from_converter)
-    pprint(schedules)
+    pprint(dict(schedules))
     for cohort, schedule in schedules.items():
         table = TableGenerator(title=cohort, sequence=schedule)
         table.generate_table()
