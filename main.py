@@ -1,6 +1,4 @@
 from typing import List
-from collections import Counter
-import bisect
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
 from brute_force_3.rooms import Room, get_room, TutorialRoom
