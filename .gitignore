@@ -1,6 +1,4 @@
 /venv
-**/__init__.py
 **/*.iml
 **/*.xml
 **/**.__pycache__
-
