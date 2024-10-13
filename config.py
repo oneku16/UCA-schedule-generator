@@ -2,7 +2,7 @@ from os import path
 
 BASE_DIR = path.dirname(path.realpath(__file__))
 
-DEANS_MEMO_PATH = "sources\\Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
+DEANS_MEMO_PATH = "sources/Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
 
 DEPARTMENT_NAMES = (
         "Preparatory",
