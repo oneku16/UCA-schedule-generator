@@ -1,6 +1,3 @@
-from typing import Dict
-
-
 class Instructor:
     __slots__ = ('__instructor_id', '__instructor_name', '__preferences')
 
@@ -25,7 +22,7 @@ class Instructor:
 class Instructors:
     __slots__ = ('__primary', '__secondary',)
 
-    def __init__(self, primary: Dict, secondary: Dict = None):
+    def __init__(self, primary: dict, secondary: dict = None):
         self.__primary = Instructor(**primary)
         self.__secondary = Instructor(**secondary) or None
 

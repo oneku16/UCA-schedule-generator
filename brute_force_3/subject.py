@@ -118,7 +118,7 @@ class Lecture(Subject):
         return self.update_me_later
 
     def __repr__(self):
-        return f'Lecture(room_id={self.unique_id}'
+        return f'Lecture(subject_id={self.unique_id}'
 
 
 class Tutorial(Subject):
@@ -130,7 +130,7 @@ class Tutorial(Subject):
         return self.update_me_later
 
     def __repr__(self):
-        return f'Tutorial(room_id={self.unique_id}'
+        return f'Tutorial(subject_id={self.unique_id}'
 
 
 class Laboratory(Subject):
@@ -142,7 +142,7 @@ class Laboratory(Subject):
         return self.update_me_later
 
     def __repr__(self):
-        return f'Lecture(room_id={self.unique_id}'
+        return f'Lecture(subject_id={self.unique_id}'
 
 
 def get_subject(subject_type, cohort, id, title, instructors, duration):
