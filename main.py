@@ -17,6 +17,29 @@ class GeneticAlgorithmScheduler:
     def __init__(self, rooms: list[Room], subjects: list[SubjectPattern]):
         self.rooms = rooms
         self.subjects = subjects
+        self.population_size = 100
+        self.num_generations = 25
+        self.cx_prob = 0.8
+        self.mut_prob = 0.4
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMin)
+
+        self.toolbox = base.Toolbox()
+        self.toolbox.register("individual", self.create_individual)
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual, n=self.population_size)
+        self.toolbox.register("mate", tools.cxOnePoint)
+        self.toolbox.register("evaluate", self.fitness_function)
+        self.toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.05)
+        self.toolbox.register("select", tools.selTournament, tournsize=6)
+
+    def create_individual(self):
+        subjects, classrooms = self.subjects, self.classrooms
+        individual = creator.Individual()
+
+        for subject in subjects:
+            for classroom in classrooms:
+                # if subject
+                ...
 
 
 
@@ -29,7 +52,9 @@ def main():
     rooms: list[Room] = [get_room(**room) for room in ROOMS]
 
     # pprint(subject_patterns)
-    pprint(rooms)
+    # pprint(rooms)
+    subject = subject_patterns[0].subjects[0].required_rooms
+    print(subject)
 
     #
     # schedule_generator = ScheduleGenerator(rooms=rooms, subject_patterns=subject_patterns)

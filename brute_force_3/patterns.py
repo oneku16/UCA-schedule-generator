@@ -17,7 +17,7 @@ class SubjectPattern:
 
     def __init__(self, subject_data):
         self.priority = [0, 0, 0, 0]
-        self.__subjects: List[Subject] = self.__create_subjects(**subject_data)
+        self.__subjects: list[Subject] = self.__create_subjects(**subject_data)
 
     def __create_subjects(self, cohort, id, instructors, title, patterns) -> List[Subject]:
         subjects = list()

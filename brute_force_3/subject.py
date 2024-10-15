@@ -36,6 +36,9 @@ class Instructors:
         if secondary is not None:
             self.secondary = Instructor(**secondary)
 
+    def __repr__(self):
+        return self.primary.instructor_name
+
 
 class Subject:
     __slots__ = (
@@ -98,7 +101,7 @@ class Subject:
         self.__required_rooms = rooms
 
     @property
-    def update_me_later(self):
+    def full_name(self):
         return f'{self.__cohort}: {self.__title}'
 
     def __str__(self):
@@ -115,7 +118,7 @@ class Lecture(Subject):
         super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
 
     def __str__(self):
-        return self.update_me_later
+        return self.full_name
 
     def __repr__(self):
         return f'Lecture(subject_id={self.unique_id}'
