@@ -4,14 +4,6 @@ from typing import List
 from config import SUBJECT_PATTERNS
 
 
-SELECTOR = {
-        'lecture': (LectureRoom, TutorialRoom),
-        'tutorial': (LectureRoom, TutorialRoom),
-        'laboratory': (LaboratoryRoom,),
-        'physical_training': (PhysicalTrainingRoom,)
-}
-
-
 class SubjectPattern:
     __slots__ = ('__subjects', 'priority')
 
@@ -32,10 +24,6 @@ class SubjectPattern:
                 subjects.append(subject)
 
         return subjects
-
-    @staticmethod
-    def get_room_type(subject_type):
-        return SELECTOR.get(subject_type)
 
     @property
     def subjects(self):

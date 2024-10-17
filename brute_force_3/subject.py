@@ -51,13 +51,13 @@ class Subject:
             '__subject_status'
     )
 
-    def __init__(self, cohort: int | str, id: int | str, title: str, instructors: dict, duration: int):
+    def __init__(self, cohort: int | str, id: int | str, title: str, instructors: dict, duration: int, required_rooms: tuple[object] | str = None):
         self.__cohort = cohort
         self.__id = id
         self.__title = title
         self.__instructors = Instructors(**instructors)
-        self.__duration = duration
-        self.__required_rooms = None
+        self.__duration = 120  # later change assign corespondent value duration.
+        self.__required_rooms = required_rooms
         self.__subject_status = True
 
     @property
@@ -69,7 +69,7 @@ class Subject:
         return self.__cohort
 
     @property
-    def id_(self):
+    def id(self):
         return self.__id
 
     @property
@@ -114,8 +114,8 @@ class Subject:
 
 class Lecture(Subject):
 
-    def __init__(self, cohort, id, title, instructors, duration):
-        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
+    def __init__(self, cohort, id, title, instructors, duration, required_rooms):
+        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration, required_rooms=required_rooms)
 
     def __str__(self):
         return self.full_name
@@ -126,11 +126,11 @@ class Lecture(Subject):
 
 class Tutorial(Subject):
 
-    def __init__(self, cohort, id, title, instructors, duration):
-        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
+    def __init__(self, cohort, id, title, instructors, duration, required_rooms):
+        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration, required_rooms=required_rooms)
 
     def __str__(self):
-        return self.update_me_later
+        return self.full_name
 
     def __repr__(self):
         return f'Tutorial(subject_id={self.unique_id}'
@@ -138,20 +138,20 @@ class Tutorial(Subject):
 
 class Laboratory(Subject):
 
-    def __init__(self, cohort, id, title, instructors, duration):
-        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
+    def __init__(self, cohort, id, title, instructors, duration, required_rooms):
+        super().__init__(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration, required_rooms=required_rooms)
 
     def __str__(self):
-        return self.update_me_later
+        return self.full_name
 
     def __repr__(self):
         return f'Lecture(subject_id={self.unique_id}'
 
 
 def get_subject(subject_type, cohort, id, title, instructors, duration):
-    if subject_type == 'lecture':
-        return Lecture(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
-    if subject_type == 'tutorial':
-        return Tutorial(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
-    if subject_type == 'laboratory':
-        return Laboratory(cohort=cohort, id=id, title=title, instructors=instructors, duration=duration)
+    _subject = {
+            'lecture': Lecture,
+            'tutorial': Tutorial,
+            'laboratory': Laboratory,
+    }
+    return _subject[subject_type](cohort=cohort, id=id, title=title, instructors=instructors, duration=duration, required_rooms=subject_type)

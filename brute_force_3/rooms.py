@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from collections import defaultdict
 
 from .subject import Subject
@@ -12,7 +12,7 @@ class Room:
     def __init__(self, room_id, capacity, room_name):
         self._room_id = room_id
         self._capacity = capacity
-        self._room_name = room_name
+        self._room_name = room_name.strip()
         self.days = [Days(day) for day in DAYS]
 
     @property
@@ -41,12 +41,12 @@ class Room:
     def is_slot_available(self) -> bool:
         return sum([day.is_slots() for day in self.days]) != len(self.days)
 
-    def get_slots_for_subject(self, subject: Subject) -> defaultdict[list]:
-        slots = defaultdict(list)
-        for DAY, day in zip((0, 1, 2, 3), self.days):
+    def get_slots_for_subject(self, subject: Subject) -> list:
+        slots = list()
+        for day in self.days:
             _status, _slots = day.slots_for_subject(subject=subject, _status=False)
             if _status:
-                slots[DAY] = _slots
+                slots.append(_slots)
         return slots
 
     def get_schedule(self):
@@ -115,6 +115,11 @@ class Days:
         self.quarters = {quarter: Quarter(**SLOT) for quarter, SLOT in enumerate(SLOTS, 1)}
         self.merged = [None] * len(self.quarters)
 
+    def __getitem__(self, quarter) -> Quarter:
+        for kye, value in self.quarters.items():
+            if value == quarter:
+                return value
+
     def check_for_subject_day(self, subject: Subject) -> bool:
         for quarter in self.quarters.values():
             if quarter.subject and f'{quarter.subject.id_}{quarter.subject.cohort}' == f'{subject.id_}{subject.cohort}':
@@ -134,14 +139,14 @@ class Days:
         instructor_end_time = datetime.strptime(__date + instructors.primary.preferences.end_time, __format).time()
         return instructor_start_time <= slot_start_time and instructor_end_time >= slots_end_time
 
-    def slots_for_subject(self, subject: Subject, _status=True) -> bool | Tuple[bool, List[Tuple]]:
+    def slots_for_subject(self, subject: Subject, _status=True) -> bool | Tuple[bool, list[Tuple]]:
         slots = list()
         if subject.duration <= 120:
             _slots = (1, 2, 3, 4)
             for quarter in _slots:
                 status_quarter = self.quarters[quarter].status is False
                 status_instructor_preferences = self.__is_fit_instructor_time(subject.instructors, self.quarters[quarter])
-                if status_quarter is status_instructor_preferences is True:
+                if status_quarter and status_instructor_preferences:
                     slots.append(quarter)
         else:
             _slots = ((1, 2), (3, 4))
@@ -278,6 +283,9 @@ class LaboratoryRoom(Room):
                 f'capacity={self._capacity}, '
                 f'room_name={self._room_name})')
 
+    def __str__(self):
+        return self.__repr__()
+
 
 class PhysicalTrainingRoom(Room):
 
@@ -285,17 +293,17 @@ class PhysicalTrainingRoom(Room):
         super().__init__(room_id, capacity, room_name)
 
     def __repr__(self):
-        return (f'BabbleRoom(room_id={self._room_id}, '
+        return (f'PhysicalTrainingRoom(room_id={self._room_id}, '
                 f'capacity={self._capacity}, '
                 f'room_name={self._room_name})')
 
 
 def get_room(room_id, capacity, room_type, room_name):
-    if room_type == 'lecture':
-        return LectureRoom(room_id=room_id, capacity=capacity, room_name=room_name)
-    if room_type == 'tutorial':
-        return TutorialRoom(room_id=room_id, capacity=capacity, room_name=room_name)
-    if room_type == 'laboratory':
-        return LaboratoryRoom(room_id=room_id, capacity=capacity, room_name=room_name)
-    if room_type == 'physical_training':
-        return PhysicalTrainingRoom(room_id=room_id, capacity=capacity, room_name=room_name)
+    room_map = {
+            'lecture': LectureRoom,
+            'tutorial': TutorialRoom,
+            'laboratory': LaboratoryRoom,
+            'physical_training': PhysicalTrainingRoom,
+    }
+    instance: Room = room_map[room_type](room_id=room_id, capacity=capacity, room_name=room_name)
+    instance.__setattr__('room_type', room_type)
