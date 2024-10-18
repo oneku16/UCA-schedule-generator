@@ -14,8 +14,8 @@ class Schedule:
         }
 
     def __iter__(self) -> Iterator[tuple[str, dict[str, Slot]]]:
-        for cohort_name, days in self.cohorts.items():
-            yield cohort_name, days
+        for cohort_name, schedule in self.cohorts.items():
+            yield cohort_name, schedule
 
     def __repr__(self):
         return str(self.cohorts)

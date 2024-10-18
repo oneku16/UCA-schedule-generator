@@ -4,6 +4,8 @@ from collections import defaultdict, Counter
 from importlib.metadata import requires
 from random import choice
 
+from deap.tools import selTournament
+
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
 from brute_force_3.rooms import Room, get_room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
@@ -63,15 +65,11 @@ class GeneticAlgorithmScheduler:
             for subject in subjects:
                 if cohort != subject.cohort:
                     continue
-                while room := choice(rooms):
-                    if room.is_empty_slot():
-                        break
+                room = choice(rooms)
                 possible_slots = room.get_empty_slots(subject)
                 day = choice(list(possible_slots.keys()))
                 index = choice(possible_slots[day])
                 slot = schedule.cohorts[cohort][day]
-                room.add_subject(day, index, subject)
-                slot[index] = {"subject": subject, "room": room}
 
                 individual.append((cohort, subject, room, day, slot, index))
         return individual
@@ -144,32 +142,10 @@ class GeneticAlgorithmScheduler:
 
     def fitness_function(self, individual):
         score = 0
+        schedule = sched.Schedule(cohorts_list=self.schedule.cohorts_list)
 
-        for cohort_individual, subject, room, day, slot, index in individual:
-            if index not in slot:
-                continue
-            subject_instance: sbj.Subject = slot[index]["subject"]
-            room_instance: rm.Room = slot[index]["room"]
-
-            if subject_instance.subject_id == subject.subject_id:
-                score -= 5
-            else:
-                score += 20
-            if room_instance.room_type in subject.preferred_rooms:
-                score -= 10
-            else:
-                score += 15
-            if room_instance.room_id == room.room_id:
-                score -= 10
-            else:
-                score += 8
-            if slot.is_full():
-                score -= 15
-            else:
-                score += 12
-
-        score += self.subject_fitness()
-        score += self.room_fitness()
+        for cohort, subject, room, day, slot, index in individual:
+            ...
 
         return score,
 
