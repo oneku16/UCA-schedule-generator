@@ -1,20 +1,48 @@
 from collections import Counter
+from typing import (
+    Any,
+    Iterable,
+)
 
-from .subject import Subject
+from ..exceptions import NoEmptySlotError
 
 
 class Slot:
     def __init__(self):
-        self.slot: dict[int, dict[str, Subject]] = dict()
+        self.slot: dict[int, dict[str, object]] = dict()
 
-    def __setitem__(self, index: int, params: dict[str, Subject]) -> None:
+    def add_subject(self, quarter, mapped_objects: dict[str, object]) -> None:
+        assert 0 <= quarter <= 3
+        if self.is_full():
+            raise NoEmptySlotError()
+        for key, value in mapped_objects.items():
+            if quarter not in self.slot:
+                self.slot[quarter] = dict()
+            self.slot[quarter][key] = value
+
+    def get_empty_quarters(self) -> list[int]:
+        quarters = list()
+        for quarter in range(4):
+            if quarter not in self.slot:
+                quarters.append(quarter)
+        return quarters
+
+    def transfer_subjects(
+            self,
+            target_slot: "Slot",
+            *quarters: Iterable[int],
+            **params: dict[str, Any]
+    ) -> None:
+        ...
+
+    def __setitem__(self, index: int, params: dict[str, object]) -> None:
         assert 0 <= index <= 3
         for key, value in params.items():
             if index not in self.slot:
                 self.slot[index] = dict()
             self.slot[index][key] = value
 
-    def __getitem__(self, index: int) -> dict[str, Subject]:
+    def __getitem__(self, index: int) -> dict[str, object]:
         assert 0 <= index <= 3
         return self.slot[index]
 

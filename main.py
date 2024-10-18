@@ -1,3 +1,4 @@
+from array import array
 from logging import getLogger
 
 from collections import defaultdict, Counter
@@ -25,7 +26,7 @@ from brute_force_3.schedule import Schedule
 
 from fyp.objects import room as rm
 from fyp.objects import subject as sbj
-from fyp.objects import schedule as sched
+from fyp.objects import cohorts_schedule as sched
 from fyp.objects import slot as sl
 
 from copy import deepcopy
@@ -35,7 +36,7 @@ logger = getLogger(__name__)
 
 
 class GeneticAlgorithmScheduler:
-    def __init__(self, rooms: list[rm.Room], subjects: list[sbj.Subject], schedule: sched.Schedule):
+    def __init__(self, rooms: list[rm.Room], subjects: list[sbj.Subject], schedule: sched.CohortsSchedule):
         self.rooms = rooms
         self.subjects = subjects
         self.schedule = schedule
@@ -43,8 +44,9 @@ class GeneticAlgorithmScheduler:
         self.num_generations = 24
         self.cx_prob = 0.8
         self.mut_prob = 0.4
+
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        creator.create("Individual", array, typecode="d", fitness=creator.FitnessMin, strategy=None)
 
         self.toolbox = base.Toolbox()
         self.toolbox.register("individual", self.create_individual)
@@ -53,6 +55,9 @@ class GeneticAlgorithmScheduler:
         self.toolbox.register("evaluate", self.fitness_function)
         self.toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.05)
         self.toolbox.register("select", tools.selTournament, tournsize=6)
+
+    def mutate(self, individual):
+        ...
 
     def create_individual(self):
         schedule = deepcopy(self.schedule)
@@ -142,7 +147,7 @@ class GeneticAlgorithmScheduler:
 
     def fitness_function(self, individual):
         score = 0
-        schedule = sched.Schedule(cohorts_list=self.schedule.cohorts_list)
+        schedule = sched.CohortsSchedule(cohorts_list=self.schedule.cohorts_list)
 
         for cohort, subject, room, day, slot, index in individual:
             ...
@@ -200,7 +205,7 @@ def main():
     cohort_names = frozenset({subject.cohort for subject in subjects})
     subjects_2: list[sbj.Subject] = list()
     rooms_2: list[rm.Room] = list()
-    cohorts_2: sched.Schedule = sched.Schedule(cohort_names)
+    cohorts_2: sched.CohortsSchedule = sched.CohortsSchedule(cohort_names)
 
     for subject in subjects:
         subjects_2.append(

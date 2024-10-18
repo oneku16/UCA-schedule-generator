@@ -1,21 +1,20 @@
 from typing import Iterator
 
-from config import DAYS
 from .slot import Slot
+
+from config import DAYS
 
 
 class Schedule:
-    def __init__(self, cohorts_list):
-        self.cohorts_list: list[str] = cohorts_list
-        self.cohorts: dict[str, dict[str, Slot]] = {
-                cohort_name: {
-                        day: Slot() for day in DAYS
-                } for cohort_name in self.cohorts_list
-        }
+    def __init__(self):
+        self.schedule: dict[str, Slot] = {day: Slot() for day in DAYS}
 
-    def __iter__(self) -> Iterator[tuple[str, dict[str, Slot]]]:
-        for cohort_name, schedule in self.cohorts.items():
-            yield cohort_name, schedule
+    def __iter__(self) -> Iterator[str, Slot]:
+        for day, slot in self.schedule.items():
+            yield day, slot
 
-    def __repr__(self):
-        return str(self.cohorts)
+    def add_subject(self, day, quarter, mapped_objects: dict[str, object]) -> None:
+        self.schedule[day].add_subject(
+            quarter=quarter,
+            mapped_objects=mapped_objects,
+        )

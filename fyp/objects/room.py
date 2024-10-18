@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from random import choice
 
 from .subject import Subject
@@ -74,6 +75,9 @@ class Room:
                     day_map[day_name] = slot
 
         return day_map
+
+    def transfer_subjects(self, room: "Room", *subjects: Iterable[Subject]) -> None:
+        ...
 
     def __repr__(self):
         return f'Room(id={self.room_id}, type={self.room_type}, capacity={self.capacity})'
