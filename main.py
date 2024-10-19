@@ -2,18 +2,14 @@ from array import array
 from logging import getLogger
 
 from collections import defaultdict, Counter
-from importlib.metadata import requires
 from random import choice
 
-from deap.tools import selTournament
+from numpy.ma.core import empty
 
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
 from brute_force_3.rooms import Room, get_room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
-from brute_force_3.schedule_generator import ScheduleGenerator
-from brute_force_3.xlsx_generator.table_generator import TableGenerator
 from config import ROOMS, DAYS
-from brute_force_3.serializer import Serializer
 from pprint import pprint
 from brute_force_3.subject import Subject
 
@@ -22,7 +18,6 @@ from deap import algorithms, base, creator, tools
 import random
 import numpy as np
 
-from brute_force_3.schedule import Schedule
 
 from fyp.objects import room as rm
 from fyp.objects import subject as sbj
@@ -36,17 +31,17 @@ logger = getLogger(__name__)
 
 
 class GeneticAlgorithmScheduler:
-    def __init__(self, rooms: list[rm.Room], subjects: list[sbj.Subject], schedule: sched.CohortsSchedule):
+    def __init__(self, rooms: list[rm.Room], subjects: list[sbj.Subject], cohort_schedule: sched.CohortsSchedule):
         self.rooms = rooms
         self.subjects = subjects
-        self.schedule = schedule
-        self.population_size = 100
+        self.cohort_schedule = cohort_schedule
+        self.population_size = 1
         self.num_generations = 24
         self.cx_prob = 0.8
         self.mut_prob = 0.4
 
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", array, typecode="d", fitness=creator.FitnessMin, strategy=None)
+        creator.create("Individual", list, fitness=creator.FitnessMin)
 
         self.toolbox = base.Toolbox()
         self.toolbox.register("individual", self.create_individual)
@@ -60,28 +55,50 @@ class GeneticAlgorithmScheduler:
         ...
 
     def create_individual(self):
-        schedule = deepcopy(self.schedule)
+        cohort_schedule = deepcopy(self.cohort_schedule)
         subjects = deepcopy(self.subjects)
         rooms = deepcopy(self.rooms)
 
         individual: list[tuple[str, sbj.Subject, rm.Room, str, sl.Slot, int]] = creator.Individual()
 
-        for cohort in schedule.cohorts:
+        for cohort, schedule in cohort_schedule:
             for subject in subjects:
                 if cohort != subject.cohort:
                     continue
-                room = choice(rooms)
-                possible_slots = room.get_empty_slots(subject)
-                day = choice(list(possible_slots.keys()))
-                index = choice(possible_slots[day])
-                slot = schedule.cohorts[cohort][day]
+                while room := choice(rooms):
+                    if room.is_empty_slot():
+                        room_empty_slot_1, room_empty_slot_2 = room.get_empty_slots(subject=subject)
+                        schedule_empty_slot = schedule.get_empty_slots()
+                        is_allocated = False
+                        common = defaultdict(list)
+                        for day, quarters in schedule_empty_slot.items():
+                            if day in room_empty_slot_1:
+                                empty_slots = [quarter for quarter in quarters if quarter in room_empty_slot_1[day]]
+                                if empty_slots:
+                                    common[day].extend(empty_slots)
+                                    is_allocated = True
+                            elif day in room_empty_slot_2 and not common:
+                                empty_slots = [quarter for quarter in quarters if quarter in room_empty_slot_2[day]]
+                                if empty_slots:
+                                    common[day].extend(empty_slots)
+                                    is_allocated = True
+                        if is_allocated:
 
-                individual.append((cohort, subject, room, day, slot, index))
+                            day = choice(list(common.keys()))
+                            index = choice(common[day])
+                            slot = schedule[day]
+
+                            room.add_subject(day, index, subject)
+                            schedule.add_subject(day, index, {'subject': subject, 'room': room})
+
+                            individual.append((cohort, subject, room, day, slot, index))
+                            break
+
         return individual
 
     def subject_fitness(self):
         score = 0
-        for cohort, schedule in self.schedule:
+        for cohort, schedule in self.cohort_schedule:
             # fitness for same subject allocated more than 1 time in a day.
             counter_in_day = defaultdict(Counter)
             for day, slots in schedule.items():
@@ -147,7 +164,7 @@ class GeneticAlgorithmScheduler:
 
     def fitness_function(self, individual):
         score = 0
-        schedule = sched.CohortsSchedule(cohorts_list=self.schedule.cohorts_list)
+        schedule = sched.CohortsSchedule(cohorts_list=self.cohort_schedule.cohorts_list)
 
         for cohort, subject, room, day, slot, index in individual:
             ...
@@ -223,10 +240,10 @@ def main():
     # print(list(filter(lambda x: 'physical_training' in x.preferred_rooms, subjects_2)))
     # print(cohorts_2)
 
-    genetic_algorithm_scheduler = GeneticAlgorithmScheduler(subjects=subjects_2, rooms=rooms_2, schedule=cohorts_2)
+    genetic_algorithm_scheduler = GeneticAlgorithmScheduler(subjects=subjects_2, rooms=rooms_2, cohort_schedule=cohorts_2)
     result = genetic_algorithm_scheduler.run()
     #
-    pprint(result)
+    # pprint(result)
 
     # schedule: dict[str, Schedule] = {cohort_name: Schedule(cohort_name) for cohort_name in cohort_names}
 

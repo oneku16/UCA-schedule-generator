@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from random import choice
+from typing import Dict, List, Type
 
 from .subject import Subject
 from .slot import Slot
@@ -18,12 +18,17 @@ class Room:
         self.capacity = capacity
         self.room_type = room_type
         self.extra_constraints = extra_constraints
-        self.room_schedule = {day: Slot() for day in DAYS}
+        self.room_schedule: dict[str, Slot] = {day: Slot() for day in DAYS}
 
     def add_subject(self, day: str, index: int, subject: Subject):
         assert day in DAYS
         assert 0 <= index <= 3
-        self.room_schedule[day][index] = {'subject': subject}
+        self.room_schedule[day].add_subject(
+            quarter=index,
+            mapped_objects={
+                'subject': subject,
+                'room': self}
+        )
 
     def subject_match(self, subject: Subject) -> tuple[bool, bool, bool]:
         """
@@ -57,7 +62,7 @@ class Room:
         """
         return any(not slot.is_full() for _, slot in self.room_schedule.items())
 
-    def get_empty_slots(self, subject: Subject) -> dict[str, list[int]]:
+    def get_empty_slots(self, subject: Subject) -> tuple[dict[str, list[int]], dict[str, list[int]]]:
         """
         finds a slots from the room, first it tries to get slot
         such that it is in the same row with other same subjects, but in different column.
@@ -66,18 +71,26 @@ class Room:
         :return: dict[str, int] -> day name and slot index.
         """
 
-        day_map = dict()
+        day_map: dict[str, list[int]] = dict()
 
-        for day_name, slots in self.room_schedule.items():
-            if not slots.is_full():
-                slot = [index for index in range(4) if index not in slots]
-                if slot:
-                    day_map[day_name] = slot
+        for day, slot in self.room_schedule.items():
+            if not slot.is_full():
+                quarters: list[int] = list(slot.get_empty_quarters())
+                day_map[day] = quarters
 
-        return day_map
+        day_map_c: dict[str, list[int]] = dict()
+        for day, quarters in day_map.items():
+            if any(
+                    value['subject'].subject_full_id == subject.subject_full_id
+                    for value in self.room_schedule[day].subjects_list
+            ):
+                continue
+            day_map_c[day] = quarters
+
+        return day_map_c, day_map
 
     def transfer_subjects(self, room: "Room", *subjects: Iterable[Subject]) -> None:
         ...
 
     def __repr__(self):
-        return f'Room(id={self.room_id}, type={self.room_type}, capacity={self.capacity})'
+        return f'Room(id={self.room_id}, type={self.room_type}, schedule={self.room_schedule})'

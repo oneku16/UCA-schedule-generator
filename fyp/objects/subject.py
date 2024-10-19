@@ -16,5 +16,9 @@ class Subject:
         self.optional_requirements = optional_requirements
         self.is_required = is_required
 
+    @property
+    def subject_full_id(self) -> str:
+        return f"{self.subject_id}-{self.cohort}"
+
     def __repr__(self):
         return f'Subject(id={self.subject_id}, name={self.subject_name}, rooms={self.preferred_rooms})'
