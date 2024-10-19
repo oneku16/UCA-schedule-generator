@@ -30,10 +30,12 @@ class Slot:
     def transfer_subjects(
             self,
             target_slot: "Slot",
-            *quarters: Iterable[int],
-            **params: dict[str, Any]
-    ) -> None:
-        ...
+            quarters: list[int],
+            random: bool = True,
+            **params: dict[str, Any],
+    ) -> None:п
+        empty_quarters = self.get_empty_quarters()
+        assert len(empty_quarters) < len(quarters)
 
     def __setitem__(self, index: int, params: dict[str, object]) -> None:
         assert 0 <= index <= 3
