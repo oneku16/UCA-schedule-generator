@@ -101,7 +101,7 @@ class GeneticAlgorithmScheduler:
         for cohort, schedule in self.cohort_schedule:
             # fitness for same subject allocated more than 1 time in a day.
             counter_in_day = defaultdict(Counter)
-            for day, slots in schedule.items():
+            for day, slots in schedule:
                 for slot_index, slot in slots:
                     if not slot:
                         continue
