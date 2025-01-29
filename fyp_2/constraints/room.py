@@ -1,23 +1,36 @@
+from collections import namedtuple
 from collections.abc import Iterable
+from dataclasses import dataclass, field,InitVar
+from typing import Iterator, Optional
 
 from .subject import Subject
 from .slot import Slot
 from config import DAYS
 
 
+SubjectMatch = namedtuple(
+    typename="SubjectMatch",
+    field_names=[
+        "is_room_match",
+        "is_requirements_match",
+        "is_optional_requirements_match",
+    ],
+)
+
+
+@dataclass
 class Room:
-    def __init__(
-            self,
-            room_id: str,
-            capacity: int,
-            room_type: str,
-            **extra_constraints
-    ):
-        self.room_id = room_id
-        self.capacity = capacity
-        self.room_type = room_type
-        self.extra_constraints = extra_constraints
-        self.room_schedule: dict[str, Slot] = {day: Slot() for day in DAYS}
+    room_id: str
+    capacity: int
+    room_type: str
+    room_name: str
+    room_schedule: dict[str, Slot] = field(init=False)
+    extra_constraints: dict = field(init=False)
+    extra_constraints_init: InitVar[Optional[dict]] = None
+
+    def __post_init__(self, extra_constraints_init: Optional[dict]) -> None:
+        self.extra_constraints = extra_constraints_init or {}
+        self.room_schedule = {day: Slot() for day in DAYS}
 
     def add_subject(self, day: str, index: int, subject: Subject):
         assert day in DAYS
@@ -29,7 +42,7 @@ class Room:
                 'room': self}
         )
 
-    def subject_match(self, subject: Subject) -> tuple[bool, bool, bool]:
+    def subject_match(self, subject: Subject) -> SubjectMatch:
         """
         Checks if the given subject's requirements and optional_requirements
         matches the class constraints.
@@ -44,7 +57,7 @@ class Room:
         is_room_match &= self.room_type in subject.preferred_rooms
 
         if requirements is None and optional_requirements is None:
-            return is_room_match, is_requirements_match, is_optional_requirements_match
+            return SubjectMatch(is_room_match, is_requirements_match, is_optional_requirements_match)
 
         for key, value in requirements.items():
             is_requirements_match &= self.extra_constraints.get(key) == value
@@ -52,7 +65,7 @@ class Room:
         for key, value in optional_requirements.items():
             is_optional_requirements_match &= self.extra_constraints.get(key) == value
 
-        return is_room_match, is_requirements_match, is_optional_requirements_match
+        return SubjectMatch(is_room_match, is_requirements_match, is_optional_requirements_match)
 
     def is_empty_slot(self) -> bool:
         """
@@ -68,6 +81,12 @@ class Room:
         If no slot is found from the same row, it finds slot from new row and returns it.
         Make sure that room has empty slots.
         :return: dict[str, int] -> day name and slot index.
+
+        M T W T F
+        0 0 0 0 0
+        1 1 1 1 1
+        2 2 2 2 2
+        3 3 3 3 3
         """
 
         day_map: dict[str, list[int]] = dict()
@@ -90,6 +109,10 @@ class Room:
 
     def transfer_subjects(self, room: "Room", *subjects: Iterable[Subject]) -> None:
         ...
+
+    def __iter__(self) -> Iterator[tuple[str, Slot]]:
+        for day, slot in self.room_schedule.items():
+            yield day, slot
 
     def __repr__(self):
         return f'Room(id={self.room_id}, type={self.room_type}, schedule={self.room_schedule})'
