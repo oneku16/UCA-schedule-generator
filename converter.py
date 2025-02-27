@@ -50,7 +50,7 @@ class Converter:
     def get_instructor_names(self, primary_instructor: str, secondary_instructor: Optional[str]) -> Dict[str, Dict[str, str or None]]:
         instructor_info = {'primary': {'instructor_id': None, 'instructor_name': self.get_next_tbd_index(), 'preferences': None}}
 
-        if primary_instructor and not primary_instructor.strip() == 'TBD':
+        if primary_instructor and primary_instructor.strip() != 'TBD':
             instructor_info = {'primary': {'instructor_id': None, 'instructor_name': primary_instructor.strip(), 'preferences': None}}
             if secondary_instructor:
                 instructor_info['secondary'] = {'instructor_id': None, 'instructor_name': secondary_instructor.strip(), 'preferences': None}

@@ -10,7 +10,7 @@ from ..exceptions.exception_slot import NoEmptySlotError
 
 class Slot:
     def __init__(self):
-        self.slot: dict[int, dict[str, object]] = dict()
+        self.slot: dict[int, dict[str, Subject]] = dict()
 
     def is_quarter_available(self, quarter: int) -> bool:
         """

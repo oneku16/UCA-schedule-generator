@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Subject:
     def __init__(
             self,
@@ -5,8 +8,8 @@ class Subject:
             subject_name: str,
             cohort: str,
             preferred_rooms: list[str],
-            requirements: dict = None,
-            optional_requirements: dict = None,
+            requirements: Optional[dict] = None,
+            optional_requirements: Optional[dict] = None,
             is_required: bool = False,
     ):
         self.subject_id = subject_id
