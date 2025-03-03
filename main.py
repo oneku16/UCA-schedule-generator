@@ -224,12 +224,20 @@ def main():
     rooms_2: list[rm.Room] = list()
     cohorts_2: sched.CohortsSchedule = sched.CohortsSchedule(cohort_names)
 
+    from genetic_algorithm.ga import GA
+    from constraints.subject import Subject
+    from constraints.room import Room
+    from constraints.instructor import Instructor
+
+    subjects_3: list[Subject] = list()
+
     for subject in subjects:
         subjects_2.append(
             sbj.Subject(
                 subject_id=subject.id,
                 subject_name=subject.title,
                 cohort=subject.cohort,
+                # duration=subject.duration,
                 preferred_rooms=subject.required_rooms,
             )
         )
@@ -237,9 +245,15 @@ def main():
     for param in ROOMS:
         rooms_2.append(rm.Room(**param))
 
+    # for s in subjects_2:
+    #     ...
+    # ga = GA(subjects=subjects_2, rooms=rooms_2, instructors=[None])
+    # res = ga.run()
+    # pprint(res)
     # print(list(filter(lambda x: 'physical_training' in x.preferred_rooms, subjects_2)))
     # print(cohorts_2)
-
+    # print([type(s) for s in subjects_2])
+    # print([r for r in rooms_2])
     genetic_algorithm_scheduler = GeneticAlgorithmScheduler(subjects=subjects_2, rooms=rooms_2, cohort_schedule=cohorts_2)
     result = genetic_algorithm_scheduler.run()
     #

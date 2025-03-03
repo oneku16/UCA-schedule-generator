@@ -56,7 +56,7 @@ class Subject:
         self.__id = id
         self.__title = title
         self.__instructors = Instructors(**instructors)
-        self.__duration = 120  # later change assign corespondent value duration.
+        self.__duration = duration  # later change assign corespondent value duration.
         self.__required_rooms = required_rooms
         self.__subject_status = True
 
