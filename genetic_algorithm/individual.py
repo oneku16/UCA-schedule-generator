@@ -15,7 +15,7 @@ class Individual:
     )
     def __init__(self, *args, **kwargs) -> None:
         self.__chromosomes = None
-        self.fitness = 0
+        self.fitness = object()
         self.args = args
         self.kwargs = kwargs
 
@@ -48,4 +48,4 @@ class Individual:
                 instructor,
             ]
             self.__chromosomes.append(gene)
-        self.fitness = 0
+        self.fitness = object()

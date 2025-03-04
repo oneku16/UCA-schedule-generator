@@ -22,6 +22,9 @@ class Slot:
         self.__end_time = None
         self.__duration = duration
 
+    def __repr__(self) -> str:
+        return f'Slot(weekday={self.__week_day}, start_time={self.__start_time}, end_time={self.__end_time})'
+
     @property
     def week_day(self) -> str:
         return self.__week_day

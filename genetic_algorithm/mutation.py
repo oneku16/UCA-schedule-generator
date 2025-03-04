@@ -6,12 +6,12 @@ from genetic_algorithm.individual import Individual
 
 
 def mutation(
-        individual: Individual,
+        indpb: float,
         instructors: list[Instructor],
         rooms: list[Room],
-        indpb: float = .25,
+        individual: Individual,
 ) -> Individual:
-    for gene in individual.chromosomes:
+    for gene in individual:
         subject, slot, room, instructor = gene
         if room.room_type not in subject.preferred_rooms:
             if 'physical_training' in subject.preferred_rooms:
@@ -36,6 +36,4 @@ def mutation(
 
         gene[2] = room
         gene[3] = instructor
-
-
-    return individual
+    return individual,
