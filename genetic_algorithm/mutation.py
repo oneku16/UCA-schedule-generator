@@ -16,7 +16,7 @@ def mutation(
         if room.room_type not in subject.preferred_rooms:
             if 'physical_training' in subject.preferred_rooms:
                 for r in rooms:
-                    if r.room_type == 'room_type':
+                    if r.room_type == 'physical_training':
                         room = r
             else:
                 while new_room := choice(rooms):

@@ -249,7 +249,7 @@ def main():
     #     ...
     ga = GA(subjects=subjects_2, rooms=rooms_2, instructors=[None] * 28)
     res = ga.run()
-    # pprint(res)
+    pprint(res)
     # print(list(filter(lambda x: 'physical_training' in x.preferred_rooms, subjects_2)))
     # print(cohorts_2)
     # print([type(s) for s in subjects_2])

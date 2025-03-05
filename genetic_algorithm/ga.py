@@ -1,8 +1,10 @@
-from copy import deepcopy
-
-from deap import algorithms, base, creator, tools
 import random
 import numpy as np
+import logging
+
+from collections import defaultdict
+from copy import deepcopy
+from deap import algorithms, base, creator, tools
 
 from constraints.subject import Subject
 from constraints.slot import Slot
@@ -12,6 +14,17 @@ from constraints.room import Room
 from genetic_algorithm.crossover import random_crossover
 from genetic_algorithm.individual import Individual as _Individual, Individual
 from genetic_algorithm.mutation import mutation
+
+from schedule.schedule import Schedule
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+console_handler = logging.FileHandler('app.log')
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(levelname)s: %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 
 class GA:
@@ -52,18 +65,67 @@ class GA:
         individual = creator.Individual()
         for ind in _individual.chromosomes:
             individual.append(ind)
-        # print(len(individual))
+        logger.log(level=logging.INFO, msg=f"Individual created: {_individual.chromosomes}")
         return individual
 
-    def fitness_function(self, individual: Individual):
-
+    @staticmethod
+    def room_fitness(schedule: Schedule) -> int:
+        satisfied_subjects = defaultdict(set)
+        unsatisfied_subjects = defaultdict(set)
         score = 0
-        for subject, slot, room, instructor in individual:
-            if room.room_type not in subject.preferred_rooms:
-                score += 100
-            if room.room_type in subject.preferred_rooms:
-                score -= 50
+        for room_id, day in schedule:
+            for slots in day:
+                # if our room is full we consider it as a good gene
+                if slots.is_full():
+                    # case for overfitted room, expected n slots got m, where m > n.
+                    if slots.is_overfitted():
+                        score += 50
+                        logger.log(
+                            level=logging.WARNING,
+                            msg=f"Slot: {slots}"
+                        )
+                    else:
+                        score -= 5
+                for subject, slot, room, instructor in slots:
+                    if not subject:
+                        continue
+                    if room.room_type in subject.preferred_rooms:
+                        score -= 10
+                        satisfied_subjects[subject.subject_full_id].add(room.room_id)
+                    else:
+                        score += 15
+                        unsatisfied_subjects[subject.subject_full_id].add(room.room_id)
 
+        for satisfied_subject in satisfied_subjects.values():
+            if len(satisfied_subject) == 1:
+                score -= 35
+            else:
+                score += len(satisfied_subject) * 25
+
+        for unsatisfied_subject in unsatisfied_subjects.values():
+            score += len(unsatisfied_subject) * 45
+
+        return score
+
+    def subject_fitness(self, schedule: Schedule) -> int:
+        ...
+
+    def instructor_fitness(self, schedule: Schedule) -> int:
+        ...
+
+    def fitness_function(self, individual: Individual):
+        schedule = Schedule(self.rooms)
+        score = 100
+        # print(individual)
+        for subject, slot, room, instructor in individual:
+            is_assigned = schedule.assign_event(
+                subject=subject,
+                slot=slot,
+                room=room,
+                instructor=instructor,
+            )
+
+        score += self.room_fitness(schedule)
 
         return (score,)
 

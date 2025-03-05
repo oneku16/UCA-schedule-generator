@@ -39,6 +39,7 @@ class NodeSlot(Node):
         "room",
         "slot",
         "instructor",
+        "collected"
     )
     def __init__(
             self,
@@ -53,21 +54,28 @@ class NodeSlot(Node):
         self.room = room
         self.slot = slot
         self.instructor = instructor
+        self.collected: list[tuple[Subject, Slot, Room, Instructor]] = list()
+
+    def is_empty(self) -> bool:
+        return self.subject is None
 
     def set_values(
             self,
-            subject: Subject,
-            room: Room,
-            slot: Slot,
-            instructor: Instructor,
+            *,
+            subject: Optional[Subject] = None,
+            slot: Optional[Slot] = None,
+            room: Optional[Room] = None,
+            instructor: Optional[Instructor] = None,
     ) -> None:
-        self.subject = subject
-        self.room = room
-        self.slot = slot
-        self.instructor = instructor
+        if self.is_empty():
+            self.subject = subject
+            self.room = room
+            self.slot = slot
+            self.instructor = instructor
+        self.collected.append((subject, slot, room, instructor))
 
     def __repr__(self) -> str:
-        return f'NodeSlot(subject={self.subject}, room={self.room}, slot={self.slot}, instructor={self.instructor})'
+        return f'NodeSlot(name={self.name}, subject={self.subject}, room={self.room}, slot={self.slot}, instructor={self.instructor})'
 
 
 class NodeDay(Node):
@@ -80,6 +88,12 @@ class NodeDay(Node):
 
     def set_values(self, slot: 'Slots') -> None:
         self.slot = slot
+
+    def __repr__(self) -> str:
+        return f'NodeDay(day={self.name}, slot={self.slot})'
+
+    def __getitem__(self, start_time: str):
+        return self.slot[start_time]
 
 
 class LinkedListMapBase:
@@ -98,13 +112,13 @@ class LinkedListMapBase:
         self.pointer: Optional[Node] = None
 
     def backward(self) -> Node | None:
-        if self.pointer == self.head or self.pointer is None:
+        if self.pointer is self.head.next_node:
             return None
         self.pointer = self.pointer.prev_node
         return self.pointer
 
     def forward(self) -> Node | None:
-        if self.pointer == self.tail or self.pointer is None:
+        if self.pointer is self.tail.prev_node:
             return None
         self.pointer = self.pointer.next_node
         return self.pointer
@@ -113,16 +127,32 @@ class LinkedListMapBase:
 class Slots(LinkedListMapBase):
     def __init__(self) -> None:
         super().__init__()
-
-        for name in SLOTS:
-            node = NodeSlot(name)
-            self.map[name] = node
+        self.pointer: NodeSlot
+        for start_time in slots:
+            node = NodeSlot(start_time)
+            self.map[start_time] = node
             node.prev_node = self.tail.prev_node
             node.next_node = self.tail
             self.tail.prev_node.next_node = node
             self.tail.prev_node = node
 
         self.pointer = self.head.next_node
+
+    def is_full(self) -> bool:
+        for node_slot in self.map.values():
+            if node_slot.is_empty():
+                return False
+        return True
+
+    def is_overfitted(self) -> bool:
+        for node_slot in self.map.values():
+            if len(node_slot.collected) >= 2:
+                return False
+
+    def get_overfitted_values(self) -> list[tuple[Subject, Slot, Room, Instructor]]:
+        return [
+            items.collected for items in self.map.values() if len(items.collected) >= 2
+        ]
 
     def __iter__(self) -> Generator[tuple[Subject, Slot, Room, Instructor], None, None]:
 
@@ -132,15 +162,21 @@ class Slots(LinkedListMapBase):
 
             dummy = dummy.next_node
 
+    def __getitem__(self, start_time) -> NodeSlot:
+        return self.map[start_time]
 
-class Days(LinkedListMapBase):
+    def __repr__(self) -> str:
+        return f'Slots({", ".join(map(str, self.map.items()))})'
+
+
+class Day(LinkedListMapBase):
     def __init__(self) -> None:
         super().__init__()
 
-        for name in DAYS:
-            node = NodeDay(name)
+        for week_day in DAYS:
+            node = NodeDay(week_day)
             node.slot = Slots()
-            self.map[name] = node
+            self.map[week_day] = node
             node.prev_node = self.tail.prev_node
             node.next_node = self.tail
             self.tail.prev_node.next_node = node
@@ -155,22 +191,47 @@ class Days(LinkedListMapBase):
             yield dummy.slot
             dummy = dummy.next_node
 
-
-class RoomSchedule:
-    __slots__ = (
-        "__map",
-    )
-    def __init__(self):
-        self.__map = {
-        }
+    def __getitem__(self, week_day) -> Slots:
+        return self.map[week_day]
 
 
 class Schedule:
     __slots__ = (
-        "schedule",
-        "rooms"
+        "__map"
     )
     def __init__(self, rooms: list[Room]):
-        self.rooms = {
-            room.room_id: list() for room in rooms
+        self.__map: dict[str, Day] = {
+            room.room_id: Day() for room in rooms
         }
+
+    def assign_event(
+            self,
+            *,
+            subject: Subject,
+            slot: Slot,
+            room: Room,
+            instructor: Optional[Instructor] = None,
+    ) -> bool:
+        target_slot = self.__map[room.room_id][slot.week_day][slot.start_time]
+        if not target_slot.is_empty():
+            return False
+        target_slot.set_values(subject=subject, room=room, slot=slot, instructor=instructor)
+        return True
+
+    @property
+    def map(self):
+        return self.__map
+
+    def get_room_schedule(self, room: Room) -> Day:
+        return self.__map[room.room_id]
+
+    def get_rooms_schedule(self) -> list[Day]:
+        days = list(self.__map.values())
+        return days
+
+    def get_slots_in_room(self, room: Room, slot: Slot) -> Slots:
+        return self.__map[room.room_id][slot.week_day]
+
+    def __iter__(self) -> Generator[tuple[str, Day], None, None]:
+        for room_id, day in self.__map.items():
+            yield room_id, day
