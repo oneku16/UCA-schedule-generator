@@ -11,42 +11,67 @@ from constraints.room import Room
 class RoomSelector:
     __slots__ = (
         "__rooms",
+        "__room_map"
     )
     def __init__(self, rooms: list[Room]):
-        self.__rooms = self.build_room_structure(rooms)
+        self.__rooms: defaultdict[str, list[Room]] = self.build_room_structure(rooms)
+
+    @property
+    def rooms(self):
+        return self.__rooms
 
     @staticmethod
-    def build_room_structure(rooms: list[Room]) -> defaultdict[str, list[Room]]:
+    def build_room_structure(
+            rooms: list[Room],
+    ) -> defaultdict[str, list[Room]]:
         mapped = defaultdict(list)
 
         for room in rooms:
-            mapped[room.room_type].append((20, room))
+            mapped[room.room_type].append([20, room])
         return mapped
+
+    def __update_room(self, room_type: str, index: int) -> Room:
+        rooms = self.__rooms[room_type]
+        rooms[index], rooms[-1] = rooms[-1], rooms[index]
+        count, room = rooms.pop()
+        count -= 1
+        rooms.append([count, room])
+
+        if count == 0:
+            rooms.pop()
+        return room
+
+    def reduce_room(self, room: Room) -> None:
+        index = 0
+
+        while index < len(self.__rooms[room.room_type]):
+            if room.room_id == self.__rooms[room.room_type][index][1].room_id:
+                self.__rooms[room.room_type][index][0] -= 1
+                if self.__rooms[room.room_type][index][0] == 0:
+                    continue
+            index += 1
+
+    def put_room(self, room: Room) -> None:
+        for index in range(len(self.__rooms[room.room_type])):
+            if self.__rooms[room.room_type][index][1].room_id == room.room_id:
+                self.__rooms[room.room_type][index][0] += 1
+                return
+        self.__rooms[room.room_type].append([1, room])
 
     def get_room(self, room_types: frozenset[str]) -> Room:
 
         room_types = tuple([r for r in room_types if r != 'tutorial'])
-        room_type = choice(room_types)
 
-        if not self.__rooms[room_type]:
-            keys = list(self.__rooms.keys())
-            if len(room_types) == 1:
-                while new_room_type := choice(keys):
-                    if new_room_type != room_type and self.__rooms[new_room_type]:
-                        room_type = new_room_type
-                        break
-            else:
-                while new_room_type := choice(room_types):
-                    if new_room_type != room_type and self.__rooms[new_room_type]:
-                        room_type = new_room_type
-                        break
+        if all(not self.__rooms[rt] for rt in room_types):
+            room_types = tuple(self.__rooms.keys())
+
+        while room_type := choice(room_types):
+            if self.__rooms[room_type]:
+                break
 
         index = randint(0, len(self.__rooms[room_type]) - 1)
-        rooms = self.__rooms[room_type]
-        rooms[index], rooms[-1] = rooms[-1], rooms[index]
-        count, room = rooms.pop(index)
-        if count - 1 >= 0:
-            rooms.append((count - 1, room))
+        room = self.__update_room(room_type, index)
+
         return room
 
 

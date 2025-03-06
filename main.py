@@ -1,4 +1,5 @@
 from array import array
+from datetime import datetime
 from logging import getLogger
 
 from collections import defaultdict, Counter
@@ -6,6 +7,7 @@ from random import choice
 
 from numpy.ma.core import empty
 
+from brute_force_3.xlsx_generator.table_generator import TableGenerator
 from converter import Converter
 from brute_force_3.patterns import SubjectPattern
 from brute_force_3.rooms import Room, get_room, TutorialRoom, LaboratoryRoom, LectureRoom, PhysicalTrainingRoom
@@ -250,6 +252,19 @@ def main():
     ga = GA(subjects=subjects_2, rooms=rooms_2, instructors=[None] * 28)
     res = ga.run()
     pprint(res)
+
+    json = defaultdict(list)
+
+    for subject, slot, room, instructor in res:
+        json[subject.cohort].append(
+            {
+                "subject": subject.subject_name,
+                "start_time": datetime.strptime(slot.start_time, "%H:%M").strftime("%H:%M"),
+                "end_time": datetime.strptime(slot.end_time, "%H:%M").strftime("%H:%M"),
+                "room": room.room_id,
+                "day": slot.week_day,
+            }
+        )
     # print(list(filter(lambda x: 'physical_training' in x.preferred_rooms, subjects_2)))
     # print(cohorts_2)
     # print([type(s) for s in subjects_2])
@@ -269,9 +284,9 @@ def main():
     # schedules = serializer.room_mode_to_cohort()
     # # pprint(from_converter)
     # pprint(dict(schedules))
-    # for cohort, schedule in schedules.items():
-    #     table = TableGenerator(title=cohort, sequence=schedule)
-    #     table.generate_table()
+    for cohort, schedule in json.items():
+        table = TableGenerator(title=cohort, sequence=schedule)
+        table.generate_table()
 
 
 if __name__ == '__main__':

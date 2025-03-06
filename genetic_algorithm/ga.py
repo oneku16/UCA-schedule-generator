@@ -7,11 +7,9 @@ from copy import deepcopy
 from deap import algorithms, base, creator, tools
 
 from constraints.subject import Subject
-from constraints.slot import Slot
 from constraints.instructor import Instructor
 from constraints.room import Room
 
-from genetic_algorithm.crossover import random_crossover
 from genetic_algorithm.individual import Individual as _Individual, Individual
 from genetic_algorithm.mutation import mutation
 
@@ -25,6 +23,12 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter("%(levelname)s: %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
+
+
+WEEKDAYS = {
+    "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
+    "Friday": 4, "Saturday": 5, "Sunday": 6
+}
 
 
 class GA:
@@ -77,15 +81,7 @@ class GA:
             for slots in day:
                 # if our room is full we consider it as a good gene
                 if slots.is_full():
-                    # case for overfitted room, expected n slots got m, where m > n.
-                    if slots.is_overfitted():
-                        score += 50
-                        logger.log(
-                            level=logging.WARNING,
-                            msg=f"Slot: {slots}"
-                        )
-                    else:
-                        score -= 5
+                    score -= 15
                 for subject, slot, room, instructor in slots:
                     if not subject:
                         continue
@@ -107,15 +103,63 @@ class GA:
 
         return score
 
-    def subject_fitness(self, schedule: Schedule) -> int:
-        ...
+    @staticmethod
+    def subject_fitness(schedule: Schedule) -> int:
+        score = 0
+
+        # A happens in row: A Monday and A on Tuesday
+
+        for subject_id, slots in schedule.subject_map.items():
+            if not slots:
+                continue
+            nested_subjects = [0] * 7
+            for slot in slots:
+                nested_subjects[WEEKDAYS[slot.week_day]] += 1
+
+            for v in nested_subjects:
+                nested_subjects.append(v)
+                if v >= 1:
+                    break
+
+            left = 0
+
+            while left < len(nested_subjects):
+                if nested_subjects[left] == 0:
+                    left += 1
+                    continue
+                else:
+                    right = left + 1
+                    while right < len(nested_subjects) and nested_subjects[right] == 0:
+                        right += 1
+                    delta = right - left
+                    if delta >= 5:
+                        if 1 <= left and right < 4:
+                            score -= 10 * delta
+                        else:
+                            score += 60
+                    elif delta == 1:
+                        score += 60
+                    else:
+                        score -= 10 * delta
+
+                    if left < len(WEEKDAYS):
+                        if nested_subjects[left] == 1:
+                            score -= 20
+                        else:
+                            if len(slots) >= 5:
+                                score += 12 * pow(nested_subjects[left], nested_subjects[left])
+                            else:
+                                score += 10 * pow(nested_subjects[left], nested_subjects[left])
+                    left = right
+
+        return score
 
     def instructor_fitness(self, schedule: Schedule) -> int:
         ...
 
     def fitness_function(self, individual: Individual):
         schedule = Schedule(self.rooms)
-        score = 100
+        score = 0
         # print(individual)
         for subject, slot, room, instructor in individual:
             is_assigned = schedule.assign_event(
@@ -124,8 +168,11 @@ class GA:
                 room=room,
                 instructor=instructor,
             )
+            if not is_assigned:
+                score += 50
 
         score += self.room_fitness(schedule)
+        score += self.subject_fitness(schedule)
 
         return (score,)
 

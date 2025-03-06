@@ -2,7 +2,29 @@ from random import random, choice
 
 from constraints.instructor import Instructor
 from constraints.room import Room
-from genetic_algorithm.individual import Individual
+from constraints.slot import Slot
+from constraints.subject import Subject
+from genetic_algorithm.individual import Individual, RoomSelector
+
+
+def room_mutation(g, rs: RoomSelector) -> None:
+    subject, _, room, _ = g
+    if 'physical_training' in subject.preferred_rooms:
+        _, r = choice(rs.rooms['physical_training'])
+    else:
+        r = rs.get_room(subject.preferred_rooms)
+    g[2] = r
+    rs.put_room(room)
+    rs.reduce_room(r)
+
+
+def slot_mutation(g) -> None:
+    _, s, _, _ = g
+    s.update_values()
+
+
+def instructor_mutation(g, i: list[Instructor]) -> None:
+    ...
 
 
 def mutation(
@@ -11,29 +33,18 @@ def mutation(
         rooms: list[Room],
         individual: Individual,
 ) -> Individual:
+    room_selector = RoomSelector(rooms)
+    for _, _, room, _ in individual:
+        room_selector.reduce_room(room)
+
     for gene in individual:
-        subject, slot, room, instructor = gene
-        if room.room_type not in subject.preferred_rooms:
-            if 'physical_training' in subject.preferred_rooms:
-                for r in rooms:
-                    if r.room_type == 'physical_training':
-                        room = r
-            else:
-                while new_room := choice(rooms):
-                    if new_room.room_type in subject.preferred_rooms:
-                        if random() < indpb:
-                            break
-                room = new_room
-        if instructor and instructor.cohorts and subject.cohort not in instructor.cohorts:
-            while new_instructor := choice(instructors):
-                if new_instructor and new_instructor.cohorts and subject.cohort in new_instructor.cohorts:
-                    if random() < indpb:
-                        break
-            instructor = new_instructor
+        random_value = random()
+        if random_value > indpb:
+            continue
 
         if random() < indpb:
-            slot.update_values()
+            room_mutation(gene, room_selector)
+            slot_mutation(gene)
+            instructor_mutation(gene, instructors)
 
-        gene[2] = room
-        gene[3] = instructor
     return individual,
