@@ -12,12 +12,19 @@ DEPARTMENT_NAMES = (
         "Economics")
 
 SUBJECT_JSON = {
-        'id': None,
+        'subject_id': None,
         'title': None,
         'cohort': None,
         'patterns': None,
         'instructors': {
         }
+}
+
+SELECTOR = {
+    'lecture': ('lecture', 'tutorial'),
+    'tutorial': ('lecture', 'tutorial'),
+    'laboratory': ('laboratory',),
+    'physical_training': ('physical_training',)
 }
 
 SUBJECT_PATTERNS = ('lecture', 'tutorial', 'laboratory',)

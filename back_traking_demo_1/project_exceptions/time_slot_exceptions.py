@@ -1,6 +1,0 @@
-class NoSlots(Exception):
-    ...
-
-
-class OverFlowSlots(Exception):
-    ...

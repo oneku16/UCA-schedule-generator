@@ -61,7 +61,7 @@ class Converter:
         self.tbd_index += 1
         return f'TBD{self.tbd_index}'
 
-    def xlsx_to_json(self, sheet_name='Spring 2023') -> List[Dict]:
+    def xlsx_to_json(self, sheet_name='Spring 2023') -> list[dict]:
         def _producer():
             sheet = self.get_xlsx_sheet(sheet_name)
             cohort = None
@@ -80,7 +80,7 @@ class Converter:
                 instructors = self.get_instructor_names(row[12], row[13])
 
                 if subject_id:
-                    subject_json['id'] = subject_id
+                    subject_json['subject_id'] = subject_id
                 if subject_title:
                     subject_json['title'] = subject_title
                 if cohort_distribution:
