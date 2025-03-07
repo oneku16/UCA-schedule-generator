@@ -3,7 +3,7 @@ from datetime import datetime
 from pprint import pprint
 from time import perf_counter
 
-from config import ROOMS
+from consts import ROOMS
 
 from converter import Converter
 

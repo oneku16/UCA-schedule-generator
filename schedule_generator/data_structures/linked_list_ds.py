@@ -1,6 +1,6 @@
 from typing import Generator, TypeVar, Optional
 
-from config import DAYS, SLOTS
+from consts import DAYS, SLOTS
 from .dictionaries import ScheduleDictionary
 from schedule_generator.constraints import Subject, Slot, Room, Instructor
 

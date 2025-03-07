@@ -2,7 +2,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from os import path, walk, mkdir
 
-from config import BASE_DIR
+from consts import BASE_DIR
 
 
 dir_path = path.dirname(path.realpath(__file__))

@@ -1,7 +1,8 @@
-from openpyxl import load_workbook
-from config import DEANS_MEMO_PATH, DEPARTMENT_NAMES, SUBJECT_JSON
-from typing import List, Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 from copy import deepcopy
+
+from openpyxl import load_workbook
+from consts import DEANS_MEMO_PATH, DEPARTMENT_NAMES, SUBJECT_JSON
 
 
 class Converter:
@@ -30,7 +31,7 @@ class Converter:
         return subject_title.replace(u'\xa0', u' ').strip()
 
     @staticmethod
-    def get_subject_patterns(course_types: str) -> List[Dict[str, int]]:
+    def get_subject_patterns(course_types: str) -> list[dict[str, int]]:
         def _splitter():
             try:
                 for subject_pattern in course_types.split(','):
@@ -47,7 +48,7 @@ class Converter:
             return f'Group {cohort_number[0]} {cohort}'.strip()
         return f'{"".join(map(str, filter(str.isupper, year_level)))} {cohort}'.strip()
 
-    def get_instructor_names(self, primary_instructor: str, secondary_instructor: Optional[str]) -> Dict[str, Dict[str, str or None]]:
+    def get_instructor_names(self, primary_instructor: str, secondary_instructor: Optional[str]) -> dict[str, dict[str, str or None]]:
         instructor_info = {'primary': {'instructor_id': None, 'instructor_name': self.get_next_tbd_index(), 'preferences': None}}
 
         if primary_instructor and primary_instructor.strip() != 'TBD':

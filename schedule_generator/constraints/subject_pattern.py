@@ -1,4 +1,4 @@
-from config import SUBJECT_PATTERNS, SELECTOR
+from consts import SUBJECT_PATTERNS, SELECTOR
 from .subject import Subject
 
 

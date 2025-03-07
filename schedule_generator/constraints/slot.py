@@ -2,7 +2,7 @@ from datetime import time, timedelta, datetime
 from random import choice
 from typing import Optional
 
-from config import DAYS, SLOTS
+from consts import DAYS, SLOTS
 
 
 class Slot:

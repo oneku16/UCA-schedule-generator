@@ -9,7 +9,7 @@ from openpyxl.styles import (
 from typing import NamedTuple
 
 from file_interactions.base_xlsx import Base
-from config import DAYS, ROOM_COLOR
+from consts import DAYS, ROOM_COLOR
 
 
 class ScheduleTime(NamedTuple):

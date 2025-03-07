@@ -1,17 +1,14 @@
 import numpy as np
 import random
 import logging
-
 from collections import defaultdict
 from copy import deepcopy
-
 from deap import algorithms, base, creator, tools
-
 from schedule_generator.constraints import Subject, Slot, Room, Instructor
 from schedule_generator.genetic_algorithm import Individual as _Individual, mutation
 from schedule_generator.schedule import Schedule
 
-
+# Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 console_handler = logging.FileHandler('app.log')
@@ -20,7 +17,7 @@ formatter = logging.Formatter("%(levelname)s: %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-
+# Constants
 WEEKDAYS = {
     "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
     "Friday": 4, "Saturday": 5, "Sunday": 6
@@ -28,12 +25,35 @@ WEEKDAYS = {
 
 
 class GeneticAlgorithm:
+    """
+    A class for implementing a genetic algorithm to generate optimal schedules.
+
+    The algorithm evaluates schedules based on room, subject, and instructor constraints,
+    and evolves a population of schedules over multiple generations to find the best solution.
+    Attributes:
+        rooms (list[Room]): A list of Room instances to include in the schedule.
+        subjects (list[Subject]): A list of Subject instances to include in the schedule.
+        instructors (list[Instructor]): A list of Instructor instances to include in the schedule.
+        population_size (int): The size of the population for the genetic algorithm.
+        num_generations (int): The number of generations to evolve the population.
+        cx_prob (float): The probability of crossover.
+        mut_prob (float): The probability of mutation.
+        independent_probability (float): The probability of independent mutation.
+        toolbox (base.Toolbox): A DEAP toolbox for registering genetic operations.
+    """
     def __init__(
             self,
             rooms: list[Room],
             subjects: list[Subject],
             instructors: list[Instructor],
     ):
+        """
+        Initializes a GeneticAlgorithm instance.
+        Args:
+            rooms (list[Room]): A list of Room instances.
+            subjects (list[Subject]): A list of Subject instances.
+            instructors (list[Instructor]): A list of Instructor instances.
+        """
         self.rooms = rooms
         self.subjects = subjects
         self.instructors = instructors
@@ -43,9 +63,11 @@ class GeneticAlgorithm:
         self.mut_prob = 0.5
         self.independent_probability = .35
 
+        # Create DEAP fitness and individual types
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMin)
 
+        # Configure the DEAP toolbox
         self.toolbox = base.Toolbox()
         self.toolbox.register("individual", self.create_individual)
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual, n=self.population_size)
@@ -55,8 +77,12 @@ class GeneticAlgorithm:
         self.toolbox.register("select", tools.selTournament, tournsize=6)
 
     def create_individual(self):
+        """
+        Creates an individual for the genetic algorithm.
+        Returns:
+            creator.Individual: An individual representing a schedule.
+        """
         _individual = _Individual()
-
         _individual.build(
             subjects=deepcopy(self.subjects),
             rooms=deepcopy(self.rooms),
@@ -70,12 +96,19 @@ class GeneticAlgorithm:
 
     @staticmethod
     def room_fitness(schedule: Schedule) -> int:
+        """
+        Evaluates the fitness of a schedule based on room constraints.
+        Args:
+            schedule (Schedule): The schedule to evaluate.
+        Returns:
+            int: The fitness score for room constraints.
+        """
         satisfied_subjects = defaultdict(set)
         unsatisfied_subjects = defaultdict(set)
         score = 0
         for room_id, day in schedule:
             for slots in day:
-                # if our room is full we consider it as a good gene
+                # If the room is full, consider it a good gene
                 if slots.is_full():
                     score -= 15
                 for subject, slot, room, instructor in slots:
@@ -88,6 +121,7 @@ class GeneticAlgorithm:
                         score += 15
                         unsatisfied_subjects[subject.subject_full_id].add(room.room_id)
 
+        # Penalize or reward based on subject-room assignments
         for satisfied_subject in satisfied_subjects.values():
             if len(satisfied_subject) == 1:
                 score -= 35
@@ -101,10 +135,16 @@ class GeneticAlgorithm:
 
     @staticmethod
     def subject_fitness(schedule: Schedule) -> int:
+        """
+        Evaluates the fitness of a schedule based on subject constraints.
+        Args:
+            schedule (Schedule): The schedule to evaluate.
+        Returns:
+            int: The fitness score for subject constraints.
+        """
         score = 0
 
-        # A happens in row: A Monday and A on Tuesday
-
+        # Evaluate subject distribution across days
         for subject_id, slots in schedule.subject_map.items():
             if not slots:
                 continue
@@ -112,13 +152,13 @@ class GeneticAlgorithm:
             for slot in slots:
                 nested_subjects[WEEKDAYS[slot.week_day]] += 1
 
+            # Extend the list to handle circular evaluation
             for v in nested_subjects:
                 nested_subjects.append(v)
                 if v >= 1:
                     break
 
             left = 0
-
             while left < len(nested_subjects):
                 if nested_subjects[left] == 0:
                     left += 1
@@ -151,9 +191,26 @@ class GeneticAlgorithm:
         return score
 
     def instructor_fitness(self, schedule: Schedule) -> int:
-        ...
+        """
+        Evaluates the fitness of a schedule based on instructor constraints.
 
-    def fitness_function(self, individual: list[list[Subject, Slot, Room, Instructor]]):
+        Args:
+            schedule (Schedule): The schedule to evaluate.
+
+        Returns:
+            int: The fitness score for instructor constraints.
+        """
+        # TODO: Implement instructor fitness logic
+        return 0
+
+    def fitness_function(self, individual: list[list[Subject, Slot, Room, Instructor]]) -> tuple[int]:
+        """
+        Evaluates the fitness of an individual (schedule).
+        Args:
+            individual (list[list[Subject, Slot, Room, Instructor]]): The individual to evaluate.
+        Returns:
+            tuple[int]: The fitness score for the individual.
+        """
         schedule = Schedule(self.rooms)
         score = 0
         for subject, slot, room, instructor in individual:
@@ -168,10 +225,17 @@ class GeneticAlgorithm:
 
         score += self.room_fitness(schedule)
         score += self.subject_fitness(schedule)
+        score += self.instructor_fitness(schedule)
 
         return (score,)
 
     def run(self):
+        """
+        Runs the genetic algorithm to evolve a population of schedules.
+
+        Returns:
+            creator.Individual: The best individual (schedule) found.
+        """
         random.seed(42)
         population = self.toolbox.population()
         stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -180,11 +244,13 @@ class GeneticAlgorithm:
         stats.register("min", np.min)
         stats.register("max", np.max)
 
+        # Evolve the population
         pop, logbook = algorithms.eaSimple(
             population, self.toolbox, self.cx_prob, self.mut_prob, self.num_generations,
             stats=stats, verbose=True
         )
 
+        # Select the best individual
         best_individual = tools.selBest(pop, 1)[0]
         print("Best Schedule Fitness Score: ", best_individual.fitness.values)
         return best_individual
