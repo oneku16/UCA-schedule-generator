@@ -5,3 +5,4 @@
 .idea
 *.log
 *.pyc
+/xlsx_files
