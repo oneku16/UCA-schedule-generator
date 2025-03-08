@@ -7,7 +7,7 @@ from consts import DEANS_MEMO_PATH, DEPARTMENT_NAMES, SUBJECT_JSON
 
 class Converter:
     def __init__(self):
-        self.xlsx_file = load_workbook(DEANS_MEMO_PATH, data_only=True)
+        self.xlsx_file = load_workbook(DEANS_MEMO_PATH, data_only=True, keep_links=False)
         self.tbd_index = 0
 
     def get_xlsx_sheet(self, sheet_name: Union[int, str]) -> Any:
