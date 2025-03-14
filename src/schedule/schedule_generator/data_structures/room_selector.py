@@ -71,7 +71,7 @@ class RoomSelector:
         """
         rooms = self.__rooms[room_type]
         rooms[index], rooms[-1] = rooms[-1], rooms[index]  # Swap with the last element
-        rooms[-1][0] -= 1 # Decrement the count
+        rooms[-1][0] -= 1  # Decrement the count
         room = rooms[-1][1]  # Re-add the room if the count is still positive
         if rooms[-1][0] == 0:
             rooms.pop()
@@ -104,7 +104,7 @@ class RoomSelector:
             if self.__rooms[room.room_type][index][1].room_id == room.room_id:
                 self.__rooms[room.room_type][index][0] += 1
                 return
-        self.__rooms[room.room_type].append([1, room]) # Add the room if it doesn't exist
+        self.__rooms[room.room_type].append([1, room])  # Add the room if it doesn't exist
 
     def get_room(self, room_types: frozenset[str]) -> Room:
         """

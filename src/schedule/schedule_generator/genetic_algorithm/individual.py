@@ -11,6 +11,7 @@ class Individual:
         "args",
         "kwargs",
     )
+
     def __init__(self, *args, **kwargs) -> None:
         self.__chromosomes = None
         self.fitness = object()

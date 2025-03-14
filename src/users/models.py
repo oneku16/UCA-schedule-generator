@@ -1,5 +1,5 @@
 from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy import String, Integer, ForeignKey
+from sqlalchemy import String, Integer, ForeignKey, Boolean
 
 from src.core.database.base import Base
 
@@ -11,6 +11,7 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(String, unique=True)
     password: Mapped[str] = mapped_column(String)
     username: Mapped[str] = mapped_column(String, unique=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class UserStatisticsModel(Base):

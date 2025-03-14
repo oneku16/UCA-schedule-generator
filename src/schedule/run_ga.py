@@ -23,7 +23,6 @@ def main():
 
     genetic_algorithm = GeneticAlgorithm(subjects=subjects, rooms=rooms, instructors=[None] * 28)
 
-
     start_time = perf_counter()
     res = genetic_algorithm.run()
     end_time = perf_counter()

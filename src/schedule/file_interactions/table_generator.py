@@ -21,7 +21,14 @@ class ScheduleTime(NamedTuple):
 
 class TableGenerator(Base):
     __slots__ = (
-            '__title', '__sequence', '__work_time', '__time_increment', '__file_name', '__directory_name', '__sheet')
+        '__title',
+        '__sequence',
+        '__work_time',
+        '__time_increment',
+        '__file_name',
+        '__directory_name',
+        '__sheet',
+    )
 
     def __init__(self, title, sequence, work_time=ScheduleTime(), time_increment=15):
         super().__init__(title)

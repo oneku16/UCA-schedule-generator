@@ -165,17 +165,15 @@ cython_debug/
 **/*.iml
 **/*.xml
 **/**.__pycache__
+
 .idea
-*.log
 *.pyc
-/src/schedule/xlsx_files
 
 # dot envs
 .env
 .env.test
 
 # virtual environments
-.venv
 venv
 /venv
 
