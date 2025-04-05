@@ -181,4 +181,4 @@ venv
 .flake8
 
 # xlsx
-/src/schedule/xlsx_files
+/schedule/xlsx_files
