@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Union, Optional
 
 from src.domain.models.user import UserModel
 
@@ -38,5 +38,6 @@ class ABCUserRepository(ABC):
     async def get_user_by_email(
             self,
             email: str,
+            password: Optional[str] = None,
     ) -> Union[UserModel, None]:
         pass

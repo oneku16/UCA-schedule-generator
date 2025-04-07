@@ -24,9 +24,14 @@ class SQLUserRepository(ABCUserRepository):
     async def delete_user(self, user_id: int) -> Union[UserModel, None]:
         pass
 
-    async def is_user_exists(self, email) -> bool:
+    async def is_user_exists(self, email: str) -> bool:
         async with self.__db as session:
-            user: Optional[UserModel] = (await get_user_by_email(session=session, email=email)).one_or_none()
+            user: Optional[UserModel] = (
+                await get_user_by_email(
+                    session=session,
+                    email=email,
+                )
+            ).scalar_one_or_none()
         return True if user else False
 
     async def get_user_by_id(self, user_id: int) -> Union[UserModel, None]:
@@ -34,9 +39,9 @@ class SQLUserRepository(ABCUserRepository):
             user: Optional[UserModel] = await get_user_by_id(session=session, user_id=user_id)
         return user
 
-    async def get_user_by_email(self, email: str) -> UserModel | None:
+    async def get_user_by_email(self, email: str, password: Optional[str] = None) -> UserModel | None:
         async with self.__db as session:
             user: Optional[UserModel] = (
-                await get_user_by_email(session=session, email=email)
-            ).one_or_none()
+                await get_user_by_email(session=session, email=email, password=password)
+            ).scalar_one_or_none()
         return user

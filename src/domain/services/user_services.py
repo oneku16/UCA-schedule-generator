@@ -39,7 +39,7 @@ class UserService(ABCUserRepository):
             role=user.role,
         )
 
-    async def get_user_by_email(self, email: str) -> Union[UserResponse, None]:
+    async def get_user_by_email(self, email: str, password: Optional[str] = None) -> Union[UserResponse, None]:
         user = await self.__user_repository.get_user_by_email(email=email)
         if not user:
             return None

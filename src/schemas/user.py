@@ -1,10 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 
 class UserCreate(BaseModel):
     username: str = Field(None, example="john_doe")
-    email: str = Field(None, example="user@example.com")
+    email: EmailStr  = Field(None, example="user@example.com")
     password: str = Field(None, example="securepassword123")
     role: Optional[str] = Field(None, example="admin")
 
