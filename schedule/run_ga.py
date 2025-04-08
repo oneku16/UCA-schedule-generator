@@ -13,7 +13,7 @@ from schedule_generator.genetic_algorithm.genetic_algorithm import GeneticAlgori
 from file_interactions.table_generator import TableGenerator
 
 
-def main():
+def run():
 
     from_converter = Converter().xlsx_to_json()
 
@@ -29,10 +29,10 @@ def main():
     pprint(res)
     print("Time taken: ", end_time - start_time)
 
-    json = defaultdict(list)
+    schedule_data = defaultdict(list)
 
     for subject, slot, room, instructor in res:
-        json[subject.cohort].append(
+        schedule_data[subject.cohort].append(
             {
                 "subject": subject.subject_name,
                 "start_time": datetime.strptime(slot.start_time, "%H:%M").strftime("%H:%M"),
@@ -41,10 +41,13 @@ def main():
                 "day": slot.week_day,
             }
         )
-    for cohort, schedule in json.items():
-        table = TableGenerator(title=cohort, sequence=schedule)
-        table.generate_table()
+    with open('schedule.json', 'w') as outfile:
+        from json import dump
+        dump(schedule_data, outfile)
+    # for cohort, schedule in json.items():
+    #     table = TableGenerator(title=cohort, sequence=schedule)
+    #     table.generate_table()
 
 
 if __name__ == '__main__':
-    main()
+    run()

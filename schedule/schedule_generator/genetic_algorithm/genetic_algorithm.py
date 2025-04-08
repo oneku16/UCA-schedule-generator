@@ -57,8 +57,8 @@ class GeneticAlgorithm:
         self.rooms = rooms
         self.subjects = subjects
         self.instructors = instructors
-        self.population_size = 750
-        self.num_generations = 1000
+        self.population_size = 64
+        self.num_generations = 4096
         self.cx_prob = 0.8
         self.mut_prob = 0.5
         self.independent_probability = .35

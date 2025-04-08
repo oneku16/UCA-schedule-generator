@@ -20,6 +20,8 @@ class AdminComponent(Container):
         self.page = page
         self.user = user
         self.db = db
+        self.width = 1920
+        self.height = 1080
         self.page.title = "Admin view"
         self.content = Row(
             controls=[

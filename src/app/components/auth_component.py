@@ -150,6 +150,8 @@ class AuthenticationView(Column):
         super().__init__()
         self.page = page
         self.__db = db
+        self.width = 1920
+        self.height = 1080
         self.login_view()
 
     def login_view(self) -> None:
