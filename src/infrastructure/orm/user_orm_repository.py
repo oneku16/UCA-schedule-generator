@@ -1,4 +1,4 @@
-from typing import Optional, Union, Any, overload
+from typing import Optional, Union, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +22,14 @@ class SQLUserRepository(ABCUserRepository):
         return user
 
     async def delete_user(self, user_id: int) -> Union[UserModel, None]:
-        pass
+        async with self.__db.begin() as session:
+            user = (
+                await get_user_by_id(session, user_id)
+            ).scalar_one_or_none()
+            if user:
+                await self.__db.delete(user)
+                await self.__db.commit()
+        return user
 
     async def is_user_exists(self, email: str) -> bool:
         async with self.__db as session:
@@ -36,7 +43,9 @@ class SQLUserRepository(ABCUserRepository):
 
     async def get_user_by_id(self, user_id: int) -> Union[UserModel, None]:
         async with self.__db as session:
-            user: Optional[UserModel] = await get_user_by_id(session=session, user_id=user_id)
+            user: Optional[UserModel] = (
+                await get_user_by_id(session=session, user_id=user_id)
+            ).scalar_one_or_none()
         return user
 
     async def get_user_by_email(self, email: str, password: Optional[str] = None) -> UserModel | None:

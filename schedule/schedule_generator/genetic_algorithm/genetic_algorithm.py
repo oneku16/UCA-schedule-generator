@@ -57,7 +57,7 @@ class GeneticAlgorithm:
         self.rooms = rooms
         self.subjects = subjects
         self.instructors = instructors
-        self.population_size = 64
+        self.population_size = 512
         self.num_generations = 4096
         self.cx_prob = 0.8
         self.mut_prob = 0.5
@@ -253,4 +253,6 @@ class GeneticAlgorithm:
         # Select the best individual
         best_individual = tools.selBest(pop, 1)[0]
         print("Best Schedule Fitness Score: ", best_individual.fitness.values)
+        with open('fitness.txt', 'w') as file:
+            file.write(f'best fitness value: {best_individual.fitness.values[0]}\n')
         return best_individual

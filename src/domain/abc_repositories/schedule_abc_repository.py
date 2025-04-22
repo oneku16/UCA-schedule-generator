@@ -10,7 +10,7 @@ class ABCScheduleRepository(ABC):
     async def create_schedule(
             self,
             schedule_data: dict[str, Any],
-    ) -> Union[ScheduleModel, None]:
+    ) -> ScheduleModel:
         pass
 
     @abstractmethod
@@ -21,7 +21,15 @@ class ABCScheduleRepository(ABC):
         pass
 
     @abstractmethod
+    async def update_schedule(
+            self,
+            schedule_data: dict[str, Any],
+    ) -> Union[ScheduleModel, None]:
+        pass
+
+    @abstractmethod
     async def get_schedule_by_id(
             self,
+            schedule_id: int,
     ) -> Union[ScheduleModel, None]:
         pass

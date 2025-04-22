@@ -22,11 +22,19 @@ class UserService(ABCUserRepository):
         )
 
     async def delete_user(self, user_id: int) -> Union[UserModel, None]:
-        pass
+        user: Union[UserModel, None] = await self.__user_repository.delete_user(user_id)
+        if user is None:
+            return None
+        return UserResponse(
+            user_id=user.user_id,
+            username=user.username,
+            email=user.email,
+            role=user.role,
+        )
 
     async def is_user_exists(self, email: str) -> bool:
-        user: Optional[UserModel] = await self.__user_repository.get_user_by_email(email=email)
-        return True if user else False
+        status: bool = await self.__user_repository.is_user_exists(email=email)
+        return status
 
     async def get_user_by_id(self, user_id: str) -> Union[UserResponse, None]:
         user = await self.__user_repository.get_user_by_id(user_id=user_id)
