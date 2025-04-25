@@ -57,11 +57,11 @@ class GeneticAlgorithm:
         self.rooms = rooms
         self.subjects = subjects
         self.instructors = instructors
-        self.population_size = 512
-        self.num_generations = 4096
-        self.cx_prob = 0.8
-        self.mut_prob = 0.5
-        self.independent_probability = .35
+        self.population_size = 100
+        self.num_generations = 100
+        self.cx_prob = 0.5
+        self.mut_prob = 0.3
+        self.independent_probability = .2
 
         # Create DEAP fitness and individual types
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))

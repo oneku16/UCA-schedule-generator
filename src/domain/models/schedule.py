@@ -7,6 +7,7 @@ class ScheduleModel(Base):
     __tablename__ = 'schedules'
 
     schedule_id: Mapped[int] = mapped_column(primary_key=True)
+    schedule_name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     data: Mapped[dict] = mapped_column(JSON, nullable=False)
     owner_id: Mapped[int] = mapped_column(ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)
     rating: Mapped[float] = mapped_column(Float, default=0.0)

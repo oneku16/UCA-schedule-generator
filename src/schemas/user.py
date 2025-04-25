@@ -12,6 +12,14 @@ class UserCreate(BaseModel):
         from_attributes = True
 
 
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    class Config:
+        from_attributes = True
+
+
 class UserResponse(BaseModel):
     user_id: int
     username: str

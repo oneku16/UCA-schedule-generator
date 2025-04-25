@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routers import user
+from src.api.routers import schedule
 from src.infrastructure.database import create_db_and_tables
 
 
@@ -31,7 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user.router, prefix="/api/auth", tags=["Users"])
+app.include_router(user.router, prefix="/auth", tags=["Users"])
+app.include_router(schedule.router, prefix="/schedule", tags=["Schedule"])
 
 
 @app.get("/", tags=["Health Check"])

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.abc_repositories import ABCScheduleRepository
 from src.domain.models import ScheduleModel
-from src.infrastructure.orm.queries import get_schedule_by_id
+from src.infrastructure.orm.queries import get_schedule
 
 
 class SQLScheduleRepository(ABCScheduleRepository):
@@ -14,16 +14,19 @@ class SQLScheduleRepository(ABCScheduleRepository):
         self.__db = db
 
     async def create_schedule(self, schedule_data: dict[str, Any]) -> ScheduleModel:
-        schedule = ScheduleModel(**schedule_data)
-        self.__db.add(schedule)
-        await self.__db.commit()
-        await self.__db.refresh(schedule)
+        try:
+            schedule = ScheduleModel(**schedule_data)
+            self.__db.add(schedule)
+            await self.__db.commit()
+            await self.__db.refresh(schedule)
+        except Exception as e:
+            raise e
         return schedule
 
     async def delete_schedule(self, schedule_id: int) -> Union[ScheduleModel, None]:
         async with self.__db as session:
             schedule: Optional[ScheduleModel] = (
-                await get_schedule_by_id(session, schedule_id)
+                await get_schedule(session, schedule_id)
             ).scalar_one_or_none()
             if schedule:
                 await self.__db.delete(schedule)
@@ -33,7 +36,7 @@ class SQLScheduleRepository(ABCScheduleRepository):
     async def update_schedule(self, schedule_data: dict[str, Any]) -> Union[ScheduleModel, None]:
         async with self.__db as session:
             schedule: Optional[ScheduleModel] = (
-                await get_schedule_by_id(session, schedule_data.get('schedule_id'))
+                await get_schedule(session, schedule_data.get('schedule_id'))
             ).scalar_one_or_none()
             for key, item in schedule_data.items():
                 setattr(schedule, key, item)
@@ -44,6 +47,13 @@ class SQLScheduleRepository(ABCScheduleRepository):
     async def get_schedule_by_id(self, schedule_id: int) -> Union[ScheduleModel, None]:
         async with self.__db as session:
             schedule: Optional[ScheduleModel] = (
-                await get_schedule_by_id(session, schedule_id)
+                await get_schedule(session, schedule_id)
+            ).scalar_one_or_none()
+        return schedule
+
+    async def get_schedule_by_name(self, schedule_name: str) -> Union[ScheduleModel, None]:
+        async with self.__db as session:
+            schedule: Optional[ScheduleModel] = (
+                await get_schedule(session, schedule_name=schedule_name)
             ).scalar_one_or_none()
         return schedule

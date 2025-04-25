@@ -5,15 +5,13 @@ from time import perf_counter
 
 from consts import ROOMS
 
-from converter import Converter
+from schedule.converter import Converter
 
-from schedule_generator.constraints import SubjectPattern, Subject, Room, Instructor
-from schedule_generator.genetic_algorithm.genetic_algorithm import GeneticAlgorithm
-
-from file_interactions.table_generator import TableGenerator
+from schedule.schedule_generator.constraints import SubjectPattern, Subject, Room, Instructor
+from schedule.schedule_generator.genetic_algorithm.genetic_algorithm import GeneticAlgorithm
 
 
-def run():
+def build():
 
     from_converter = Converter().xlsx_to_json()
 
@@ -41,13 +39,5 @@ def run():
                 "day": slot.week_day,
             }
         )
-    with open('schedule.json', 'w') as outfile:
-        from json import dump
-        dump(schedule_data, outfile)
-    # for cohort, schedule in json.items():
-    #     table = TableGenerator(title=cohort, sequence=schedule)
-    #     table.generate_table()
 
-
-if __name__ == '__main__':
-    run()
+    return schedule_data

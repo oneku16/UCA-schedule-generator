@@ -33,3 +33,10 @@ class ABCScheduleRepository(ABC):
             schedule_id: int,
     ) -> Union[ScheduleModel, None]:
         pass
+
+    @abstractmethod
+    async def get_schedule_by_name(
+            self,
+            schedule_name: str,
+    ) -> Union[ScheduleModel, None]:
+        pass
