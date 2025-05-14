@@ -57,11 +57,12 @@ class GeneticAlgorithm:
         self.rooms = rooms
         self.subjects = subjects
         self.instructors = instructors
-        self.population_size = 100
-        self.num_generations = 100
+        self.population_size = 128
+        self.num_generations = 1024
         self.cx_prob = 0.5
-        self.mut_prob = 0.3
-        self.independent_probability = .2
+        self.mut_prob = 0.47
+        self.independent_probability = .42
+
 
         # Create DEAP fitness and individual types
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
@@ -145,9 +146,16 @@ class GeneticAlgorithm:
         score = 0
 
         # Evaluate subject distribution across days
+
+        subject_slot_distribution = defaultdict(set)
+
         for subject_id, slots in schedule.subject_map.items():
             if not slots:
                 continue
+
+            for slot in slots:
+                subject_slot_distribution[subject_id].add(slot.start_time)
+
             nested_subjects = [0] * 7
             for slot in slots:
                 nested_subjects[WEEKDAYS[slot.week_day]] += 1
@@ -188,6 +196,19 @@ class GeneticAlgorithm:
                                 score += 10 * pow(nested_subjects[left], nested_subjects[left])
                     left = right
 
+
+        for value in subject_slot_distribution.values():
+            # if len(value) >= 5:
+            #     score += 100
+            # elif len(value) == 4:
+            #     score += 50
+            # elif len(value) == 3:
+            #     score += 25
+            # elif len(value) == 2:
+            #     score -= 20
+            if len(value) == 1:
+                score -= 50
+
         return score
 
     def instructor_fitness(self, schedule: Schedule) -> int:
@@ -221,7 +242,9 @@ class GeneticAlgorithm:
                 instructor=instructor,
             )
             if not is_assigned:
-                score += 50
+                score += 500
+            else:
+                score -= 100
 
         score += self.room_fitness(schedule)
         score += self.subject_fitness(schedule)

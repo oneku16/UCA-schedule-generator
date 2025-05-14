@@ -1,7 +1,8 @@
 from collections import defaultdict
 from datetime import datetime
-from pprint import pprint
 from time import perf_counter
+
+from pprint import pprint
 
 from consts import ROOMS
 
@@ -32,7 +33,7 @@ def build():
     for subject, slot, room, instructor in res:
         schedule_data[subject.cohort].append(
             {
-                "subject": subject.subject_name,
+                "lecture": subject.subject_name,
                 "start_time": datetime.strptime(slot.start_time, "%H:%M").strftime("%H:%M"),
                 "end_time": datetime.strptime(slot.end_time, "%H:%M").strftime("%H:%M"),
                 "room": room.room_id,

@@ -1,1 +1,1 @@
-best fitness value: 2007.0
+best fitness value: 12232.0
