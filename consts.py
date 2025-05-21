@@ -3,7 +3,10 @@ from os import path
 from pathlib import Path
 
 ROOT_DIR: Final[Path] = Path(__file__).parent
-DEANS_MEMO_PATH = "/home/user/PycharmProjects/UCA-schedule-generator/schedule/sources/Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
+
+
+DEANS_MEMO_PATH =  str(ROOT_DIR) + "/schedule/sources/Course Memo_Spring 2023_ver05_10.01.23_updated by Serik M.xlsx"
+
 
 DEPARTMENT_NAMES = (
     "Preparatory",
